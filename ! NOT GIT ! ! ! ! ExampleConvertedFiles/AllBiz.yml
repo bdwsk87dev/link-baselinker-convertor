@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+            <!DOCTYPE yml_catalog SYSTEM "shops.dtd">
+            <yml_catalog>
+                <shop>
+                    <categories>
+                        <category id="1"><![CDATA[Ноутбуки]]></category>
+                        <category id="2"><![CDATA[Инструменты музыкальные]]></category>
+                    </categories>
+                    <currencies>
+                        <currency id="UAH" rate="1"/>
+                        <currency id="USD" rate="CB"/>
+                    </currencies>
+                    <offers>
+                        <offer id="1" available="true">
+                            <categoryId>1</categoryId>
+                            <name>Asus X401A nbgf</name>
+                            <name_uk>Asus X401A nbgf</name_uk>
+                            <currencyId>USD</currencyId>
+                            <price>280.00</price>
+                            <prices>
+                                <price>
+                                    <value>260</value>
+                                    <quantity>10</quantity>
+                                </price>
+                                <price>
+                                    <value>250.00</value>
+                                    <quantity>25</quantity>
+                                </price>
+                                <price>
+                                    <value>240.45</value>
+                                    <quantity>50</quantity>
+                                </price>
+                            </prices>
+                            <vendor>Asus</vendor>
+                            <vendorCode>A1234567B</vendorCode>
+                            <country_of_origin>Китай</country_of_origin>
+                            <url><![CDATA[http://www.vash-site/page1.html]]></url>
+                            <picture><![CDATA[https://ua.all.biz/img/ua/catalog/2707296.jpeg]]></picture>
+                            <picture><![CDATA[https://ua.all.biz/img/ua/catalog/2707296.jpeg]]></picture>
+                            <picture><![CDATA[https://ua.all.biz/img/ua/catalog/2707296.jpeg]]></picture>
+                            <picture><![CDATA[
+                                https://ua.all.biz/img/ua/catalog/2707296.jpeg,
+                                https://ua.all.biz/img/ua/catalog/2707296.jpeg,
+                                https://ua.all.biz/img/ua/catalog/2707296.jpeg
+                            ]]></picture>
+                            <description><![CDATA[Ноутбук Asus X401 - это стильный, изящный, компактный компьютер, выполненный в легком корпусе и оснащенный эргономичной клавиатурой.]]></description>
+                            <description_uk><![CDATA[Ноутбук Asus X401 – це стильний, витончений, компактний комп'ютер, виконаний у легкому корпусі та оснащений ергономічною клавіатурою.]]></description_uk>
+                            <param name="Оптовая цена">3.78</param>
+                            <param name="Минимальный заказ опт">1000</param>
+                            <param name="Единица измерения">штук</param>
+                            <param name="Производимая продукция">1</param>
+                            <param name="Возможен экспорт">1</param>
+                            <param name="Импортная продукция">0</param>
+                            <param name="id позиции Allbiz">0</param>
+                            <param name="Вес, кг">2</param>
+                            <param name="Длина, см">10</param>
+                            <param name="Ширина, см">5</param>
+                            <param name="Высота, см">12</param>
+                        </offer>
+                    </offers>
+                </shop>
+            </yml_catalog>

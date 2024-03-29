@@ -1,0 +1,196 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const EditForm = ({ productId, onClose }) => {
+    const [formData, setFormData] = useState({
+        productId: productId,
+        shop_name: '',
+        shop_link: '',
+        uploadNewXLS: false,
+        deleteProducts: false,
+        allowNewProducts: false,
+        filename: '',
+    });
+    const [completionPercentage, setCompletionPercentage] = useState(0);
+
+    const [updated, setUpdated] = useState(0);
+    const [deleted, setDeleted] = useState(0);
+    const [added, setAdded] = useState(0);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            filename: file,
+        }));
+    };
+
+    const fetchCompletionPercentage = async () => {
+        try {
+            const response = await axios.get('/get-completion-percentage');
+            const percentage = response.data.percentage;
+            console.log(percentage);
+            setCompletionPercentage(percentage);
+        } catch (error) {
+            console.error('Ошибка при получении процента выполнения:', error);
+        }
+    };
+
+    // useEffect(() => {
+    //     // Вызывайте функцию для загрузки процента выполнения каждую секунду
+    //     const intervalId = setInterval(() => {
+    //         fetchCompletionPercentage();
+    //     }, 1000);
+    //
+    //     // Очистка интервала при размонтировании компонента
+    //     return () => clearInterval(intervalId);
+    // }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('productId', formData.productId);
+            formDataToSend.append('shop_name', formData.shop_name);
+            formDataToSend.append('shop_link', formData.shop_link);
+            formDataToSend.append('uploadNewXLS', formData.uploadNewXLS);
+            formDataToSend.append('deleteProducts', formData.deleteProducts);
+            formDataToSend.append('allowNewProducts', formData.allowNewProducts);
+            formDataToSend.append('filename', formData.filename);
+
+            const response = await axios.post('/api/edit', formDataToSend);
+
+            if(response.data['status'] == "ok"){
+                window.location.reload();
+            }
+
+            setUpdated(response.data['priceUpdateProductCount']);
+            setDeleted(response.data['deletedProductCount']);
+            setAdded(response.data['addedProductCount']);
+
+            console.log('Ответ от сервера:', response.data);
+            // onClose();
+        } catch (error) {
+            console.error('Произошла ошибка при отправке данных:', error);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, type } = e.target;
+        const value = type === 'checkbox' ? e.target.checked : e.target.value;
+
+        if (name === 'filename') {
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                [name]: e.target.files[0],
+            }));
+        } else {
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                [name]: value,
+            }));
+        }
+    };
+
+    return (
+
+        <div className="modal-background">
+            <div className="modal">
+                <h2>Редагування файлу</h2>
+
+                <div>
+                    {/*<label>*/}
+                    {/*    Процент выполнения: {completionPercentage !== null ? `${completionPercentage}%` : 'Загрузка...'}*/}
+                    {/*</label>*/}
+                </div>
+
+                <p>ID: {productId}</p>
+                <form onSubmit={handleSubmit}>
+                    <div>
+                        <label>
+                            Назва магазину
+                            <input
+                                type="text"
+                                name="shop_name"
+                                value={formData.shop_name}
+                                onChange={handleChange}
+                            />
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Лінк на магазин :
+                            <input
+                                type="text"
+                                name="shop_link"
+                                value={formData.shop_link}
+                                onChange={handleChange}
+                            />
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Оновити ціни з нового xlsx фалу :
+                            <input
+                                type="checkbox"
+                                name="uploadNewXLS"
+                                checked={formData.uploadNewXLS}
+                                onChange={handleChange}
+                            />
+                        </label>
+                    </div>
+                    {formData.uploadNewXLS && (
+
+                        <div>
+                            <label>
+                                Filename:
+                                <input
+                                    type="file"
+                                    name="filename"
+                                    onChange={(e) => handleFileChange(e)}
+                                />
+                            </label>
+
+                            {/*<select name="updateType" value={formData.updateType} onChange={handleChange}>*/}
+                            {/*    <option value="updatePrices">Оновити ціни з нового файлу</option>*/}
+                            {/*</select>*/}
+
+                            <label>
+                                Видалити товари яких немає?
+                                <input
+                                    type="checkbox"
+                                    name="deleteProducts"
+                                    checked={formData.deleteProducts}
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            <label>
+                                Додавати нові товари з нового файлу?
+                                <input
+                                    type="checkbox"
+                                    name="allowNewProducts"
+                                    checked={formData.allowNewProducts}
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            <div>
+                                {/* Остальной код вашей формы */}
+                                Оновлено цін: {updated} <br/>
+                                Видалено товарів: {deleted} <br/>
+                                Додано товарів: {added} <br/>
+                            </div>
+
+                        </div>
+                )}
+                    <button class="updateButton" type="submit">Оновити</button>
+                    <button class="closeButton" onClick={onClose}>Вийти</button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default EditForm;

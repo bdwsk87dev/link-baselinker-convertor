@@ -1,0 +1,6 @@
+https://api.takedrop.pl/merchant/export/ceneo?shopId=100763&page=0&apiKey=1c5d294ef214485fa0064c8880876f1d
+
+Admin
+https://panel-e.baselinker.com/inventory_export.php
+ashvets.np@gmail.com
+zzzxxxZX3

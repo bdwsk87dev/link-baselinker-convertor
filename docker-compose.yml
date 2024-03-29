@@ -1,0 +1,59 @@
+version: "3.7"
+
+services:
+    php:
+        env_file:
+            - .env
+        build:
+            args:
+                user: john
+                uid: 1000
+            context: ./docker
+            dockerfile: php-fpm.Dockerfile
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        depends_on:
+            - pgadmin
+
+    postgres:
+        env_file: ./.env
+        image: postgres:13
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE}
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+        volumes:
+            - ./db_postgres:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+
+    pgadmin:
+        image: dpage/pgadmin4
+        restart: unless-stopped
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+        ports:
+            - "5050:80"
+
+    nginx:
+        image: nginx:1.17-alpine
+        restart: unless-stopped
+        ports:
+            - "80:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx:/etc/nginx/conf.d
+        depends_on:
+            - postgres
+
+    node:
+        build:
+            context: ./docker
+            dockerfile: node.Dockerfile
+        tty: true
+        volumes:
+            - ./:/var/www
