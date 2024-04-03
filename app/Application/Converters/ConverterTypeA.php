@@ -7,7 +7,7 @@ use DOMException;
 use Exception;
 use SimpleXMLElement;
 
-class ConverterTypeA
+class ConverterTypeA implements XmlConverterInterface
 {
     public function __construct(){
     }
@@ -201,6 +201,6 @@ class ConverterTypeA
 
 }
 
-
+// EXAMPLES
 // createTextNode
-// $categoryElement->appendChild($yml->createTextNode($categoryName['name']));
+// $categoryElement->appendChild($yml->createTextNode($categoryName['name'])); createCDATASection

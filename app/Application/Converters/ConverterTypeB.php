@@ -7,7 +7,7 @@ use DOMException;
 use Exception;
 use SimpleXMLElement;
 
-class ConverterTypeB
+class ConverterTypeB implements XmlConverterInterface
 {
     public function __construct()
     {

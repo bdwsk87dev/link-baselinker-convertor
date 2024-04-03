@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Application\Converters\ConverterTypeA;
-use App\Application\Converters\ConverterTypeB;
 use App\Application\FileManager\LinkUploader;
 use App\Application\FileManager\Uploader;
 use App\Models\XmlFile;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use League\CommonMark\ConverterInterface;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
@@ -17,20 +15,18 @@ use SimpleXMLElement;
 
 class XmlFileController extends Controller
 {
-    private $globalConvertor;
-    private $globalUploader;
+    private ConverterInterface $globalConvertor;
 
     public function  __construct(
         private readonly Uploader $uploader,
         private readonly LinkUploader $linkUploader,
-        private readonly ConverterTypeA $converterTypeA,
-        private readonly ConverterTypeB $converterTypeB,
+        private readonly ConverterInterface $converterTypeA,
+        private readonly ConverterInterface $converterTypeB,
     ){
 
     }
 
     public function prepareConvertor($XmlType){
-
 
         switch ($XmlType) {
             case 'typeA':
@@ -73,9 +69,6 @@ class XmlFileController extends Controller
                 break;
         }
 
-
-
-
         // Конвертируем
         $this->globalConvertor->convert
         (
@@ -86,19 +79,15 @@ class XmlFileController extends Controller
         );
 
 
+        XmlFile::create([
+                    'filename' => $newFileName,
+                    'shop_name' => $shopName,
+                    'shop_link' => $shopLink,
+                    'uploadDateTime' => now(),
+                    'lastCheckDateTime' => now(),
+                ]);
 
         dd('OKEY!! MOTHER FUCKER!!!');
-
-
-
-
-
-
-
-
-
-
-
 
 
 
