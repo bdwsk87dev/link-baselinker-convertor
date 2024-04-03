@@ -7,7 +7,7 @@ const Home = ({ xmlFiles }) => {
     const [customName, setcustomName] = useState('');
     const [description, setDescription] = useState('');
     const [uploadType, setUploadType] = useState('file');
-    const [xmlType, setXmlType] = useState('xmlType');
+    const [xmlType, setXmlType] = useState('typeA');
     const [remoteFileLink, setRemoteFileLink] = useState('');
 
     const handleSubmit = (e) => {
@@ -31,6 +31,7 @@ const Home = ({ xmlFiles }) => {
         formData.append('customName', customName);
         formData.append('description', description);
         formData.append('uploadType', uploadType);
+        formData.append('xmlType', xmlType);
         Inertia.post('/api/upload', formData);
     };
 

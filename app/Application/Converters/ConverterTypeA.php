@@ -12,76 +12,86 @@ class ConverterTypeA
     }
 
     public function convert(
-        $uploadFilePath,
-        $convertedFileName
+        $uploadFilePath
     ){
-
-
-        //$xmlData = file_get_contents(storage_path('app/public/uploads/originals/1711436825_11 BL__Produkty__domylny_XML_2024-02-14_15_36.xml'));
 
         $xmlData = file_get_contents($uploadFilePath);
 
-
-        // Создаем объект SimpleXMLElement из данных XML
+        /** Создаем объект SimpleXMLElement из данных XML */
         $xml = new SimpleXMLElement($xmlData);
 
-
-
-        // Доступ к корневому элементу <shop>
+        /** Доступ к корневому элементу <shop> */
         $shop = $xml;
 
-        // Создание YML-документа
+        /** Создание YML-документа */
         $yml = new DOMDocument('1.0', 'utf-8');
         $yml->appendChild($yml->createElement('yml_catalog'));
         $yml->documentElement->setAttribute('date', date('Y-m-d'));
 
-        // Добавление информации о магазине
+        /** Добавление информации о магазине */
         $shop = $yml->documentElement->appendChild($yml->createElement('shop'));
-        // ... (остальная часть кода без изменений)
 
-        // Добавление категорий
-        $categories = $shop->appendChild($yml->createElement('categories'));
+        /** Добавляем тег категорий */
+        $categoriesTag = $shop->appendChild($yml->createElement('categories'));
 
-        // Исправленный способ создания элемента категории
-        $categoryElement = $yml->createElement('category');
-        $categoryElement->setAttribute('id', '1');
-        $categoryElement->appendChild($yml->createTextNode('Zabawki'));
-        $categories->appendChild($categoryElement);
+        /**
+         * Находим все категории
+         */
 
-        // Аналогично для остальных категорий
-        $categoryElement = $yml->createElement('category');
-        $categoryElement->setAttribute('id', '2');
-        $categoryElement->appendChild($yml->createTextNode('Dla dzieci'));
-        $categories->appendChild($categoryElement);
+        $categories = [];
+        foreach ($xml->product as $product) {
+            if(isset($product->category_name)){
 
-        $categoryElement = $yml->createElement('category');
-        $categoryElement->setAttribute('id', '3');
-        $categoryElement->appendChild($yml->createTextNode('Psi Patrol'));
-        $categories->appendChild($categoryElement);
+                // Преобразуем буквы категории в числа
+                $categoryNumber = $this->lettersToNumbers($product->category_name);
+
+                // Добавляем категорию в массив
+                $categories[$product->category_name]['id'] = $categoryNumber;
+                $categories[$product->category_name]['name'] = $product->category_name;
+            }
+        }
+
+        foreach ($categories as $categoryName){
+            // Категории
+            $categoryElement = $yml->createElement('category');
+            $categoryElement->setAttribute('id', $categoryName['id']);
+            $categoryElement->appendChild($yml->createTextNode($categoryName['name']));
+            $categoriesTag->appendChild($categoryElement);
+        }
+
+        /**
+         * Находим все товары
+         */
+
         // Обработка товаров
         foreach ($xml->product as $product) {
+
+            /** Создаём тег offer */
             $offer = $shop->appendChild($yml->createElement('offer'));
 
-            // ID товара
+            /** ID товара */
             $offer->setAttribute('id', $product->product_id);
 
-            // Название товара
+            /** Категория товара */
+            $offer->appendChild($yml->createElement('categoryId', $categories[$product->category_name]));
+
+            /** Название товара */
             $offer->appendChild($yml->createElement('name', $product->name));
 
-            // Категория товара
-            $categoryId = match ($product->category_name) {
-                'Główna' => '1',
-                default => null,
-            };
-            if ($categoryId) {
-                $offer->appendChild($yml->createElement('categoryId', $categoryId));
-            }
+            /** Название товара укр */
+            $offer->appendChild($yml->createElement('name_uk', ''));
 
-            // Цена
+            /** Цена */
             $offer->appendChild($yml->createElement('price', $product->price));
 
             // Валюта
             $offer->appendChild($yml->createElement('currencyId', 'PLN'));
+
+
+
+
+
+
 
             // Описание
             $offer->appendChild($yml->createElement('description', $product->description));
@@ -93,14 +103,53 @@ class ConverterTypeA
 
             // Дополнительные параметры
             foreach ($product->attributes->attribute as $attribute) {
-                $offer->appendChild($yml->createElement('param', [
-                    'name' => $attribute->attribute_name,
-                    'value' => $attribute->attribute_value,
-                ]));
+
+                // Создаем элемент param
+                $paramElement = $yml->createElement('param');
+
+                // Устанавливаем атрибуты name и value
+                $paramElement->setAttribute('name', $attribute->attribute_name);
+                $paramElement->setAttribute('value', $attribute->attribute_value);
+
+                // Добавляем элемент param в offer
+                $offer->appendChild($paramElement);
             }
         }
 
         // Сохранение YML-файла
-        $yml->save($convertedFileName);
+        $yml->save($uploadFilePath."_converted.xml");
     }
+
+
+    public function lettersToNumbers($input) {
+
+        $input = strtoupper($input);
+
+        $letterNumberMap = [
+            'A' => 1, 'B' => 2, 'C' => 3, 'D' => 4, 'E' => 5,
+            'F' => 6, 'G' => 7, 'H' => 8, 'I' => 9, 'J' => 10,
+            'K' => 11, 'L' => 12, 'M' => 13, 'N' => 14, 'O' => 15,
+            'P' => 16, 'Q' => 17, 'R' => 18, 'S' => 19, 'T' => 20,
+            'U' => 21, 'V' => 22, 'W' => 23, 'X' => 24, 'Y' => 25,
+            'Z' => 26, 'ł' => 27, 'ó' => 28
+        ];
+
+        $result = '';
+
+        // Проходим по каждому символу в строке
+        for ($i = 0; $i < strlen($input); $i++) {
+            $char = $input[$i];
+
+            // Если символ буква и есть в таблице соответствия, добавляем число в результат
+            if (ctype_alpha($char) && isset($letterNumberMap[$char])) {
+                $result .= $letterNumberMap[$char];
+            } else {
+                // Если символ не буква или нет в таблице, оставляем его как есть
+                $result .= $char;
+            }
+        }
+
+        return $result;
+    }
+
 }

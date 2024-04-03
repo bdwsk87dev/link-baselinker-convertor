@@ -30,6 +30,8 @@ class XmlFileController extends Controller
     }
 
     public function prepareConvertor($XmlType){
+
+
         switch ($XmlType) {
             case 'typeA':
                 $this->globalConvertor = $this->converterTypeA;
@@ -44,7 +46,7 @@ class XmlFileController extends Controller
     {
 
         /* Cheking xml type */
-        $XmlType = $request->input('XmlType');
+        $XmlType = $request->input('xmlType');
         $this->prepareConvertor($XmlType);
 
         /* Cheking upload type */
@@ -71,24 +73,16 @@ class XmlFileController extends Controller
                 break;
         }
 
-
-
-
-
-
-
-
+        // Конвертируем
+        $this->globalConvertor->convert
+        (
+            $uploadFilePath
+        );
 
 
 
         dd('OKEY!! MOTHER FUCKER!!!');
 
-        // Конвертируем
-        $this->globalConvertor->convert
-        (
-            $uploadFilePath,
-            $convertedFileName
-        );
 
 
 
@@ -102,13 +96,6 @@ class XmlFileController extends Controller
 
 
 
-
-
-
-
-
-//
-//
 //        // $currentDateTime = now()->format('d_m H:i');
 //        $currentDateTime = time();
 //
