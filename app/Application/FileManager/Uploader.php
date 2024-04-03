@@ -10,11 +10,13 @@ class Uploader
     }
 
     public function upload(
-        $file,
-        $fileName
+        $file
     ): string
     {
-        $file->storeAs('public/uploads/originals/', $fileName);
-        return Storage::path('public/uploads/originals/' . $fileName);
+        $fileName = time().'_'.
+            $file->getClientOriginalName();
+
+        $file->storeAs('public/uploads/originals/', "F_".$fileName);
+        return Storage::path('public/uploads/originals/'."F_".$fileName);
     }
 }

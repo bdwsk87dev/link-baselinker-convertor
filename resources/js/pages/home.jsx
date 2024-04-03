@@ -4,21 +4,32 @@ import { InertiaLink, Head } from '@inertiajs/inertia-react';
 
 const Home = ({ xmlFiles }) => {
     const [file, setFile] = useState(null);
-    const [shopName, setShopName] = useState('');
-    const [shopLink, setShopLink] = useState('');
-    const [uploadType, setUploadType] = useState('xlsx');
+    const [customName, setcustomName] = useState('');
+    const [description, setDescription] = useState('');
+    const [uploadType, setUploadType] = useState('file');
+    const [xmlType, setXmlType] = useState('xmlType');
+    const [remoteFileLink, setRemoteFileLink] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (!file) {
-            return; // Файл не выбран, ничего не делаем
+        const formData = new FormData();
+
+        if (uploadType === 'file') {
+            if (!file) {
+                return; // Файл не выбран, ничего не делаем
+            }
+            formData.append('file', file);
+        } else if (uploadType === 'link') {
+            if (!remoteFileLink) {
+                return; // Ссылка на файл не указана, ничего не делаем
+            }
+            formData.append('remoteFileLink', remoteFileLink);
         }
 
-        const formData = new FormData();
         formData.append('file', file);
-        formData.append('shopName', shopName);
-        formData.append('shopLink', shopLink);
+        formData.append('customName', customName);
+        formData.append('description', description);
         formData.append('uploadType', uploadType);
         Inertia.post('/api/upload', formData);
     };
@@ -91,37 +102,63 @@ const Home = ({ xmlFiles }) => {
                 `}</style>
             </Head>
             <div className="home-container">
-                <h1>XLSX CONVERTER TO LINK!!</h1>
+                <h1>CONVERTEDZILLA</h1>
                 <div>
-                    <p>Авторизовано</p>
-                    <InertiaLink href="/logout">Вийти з системи</InertiaLink>
+                    <InertiaLink href="/logout">logout</InertiaLink>
                 </div>
                 <form className="upload-form" encType="multipart/form-data" onSubmit={handleSubmit}>
 
-                    <select className="home-upload-type-select" value={uploadType} onChange={(e) => setUploadType(e.target.value)}>
-                        <option value="type1" selected>Type1</option>
-                        <option value="type2">Type2</option>
+                    <span>Xml upload type</span>
+                    <select
+                        className="home-upload-type-select"
+                        value={uploadType}
+                        onChange={(e) => setUploadType(e.target.value)}
+                    >
+                        <option value="file">Upload file and convert</option>
+                        <option value="link">Convert from link</option>
                     </select>
 
-                    <br />
+                    <br/>
 
-                    <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-                    <br />
+                    <span>Original Xml type format</span>
+                    <select
+                        className="home-upload-xmltype-select"
+                        value={xmlType}
+                        onChange={(e) => setXmlType(e.target.value)}
+                    >
+                        <option value="typeA">Format A</option>
+                        <option value="typeB">Format B</option>
+                    </select>
+
+                    <br/>
+
+                    {uploadType === 'file' ? (
+                        <input type="file" onChange={(e) => setFile(e.target.files[0])}/>
+                    ) : (
+                        <input
+                            type="text"
+                            value={remoteFileLink}
+                            onChange={(e) => setRemoteFileLink(e.target.value)}
+                            placeholder="Remote File Link"
+                        />
+                    )}
+
+                    <br/>
                     <input
                         type="text"
-                        value={shopName}
-                        onChange={(e) => setShopName(e.target.value)}
-                        placeholder="Shop Name"
+                        value={customName}
+                        onChange={(e) => setcustomName(e.target.value)}
+                        placeholder="Custom name"
                     />
-                    <br />
+                    <br/>
                     <input
                         type="text"
-                        value={shopLink}
-                        onChange={(e) => setShopLink(e.target.value)}
-                        placeholder="Shop Link"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Descripton"
                     />
 
-                    <br />
+                    <br/>
 
                     {Array.isArray(xmlFiles) && xmlFiles.length > 0 ? (
                         xmlFiles.map((xmlFile) => (

@@ -15,9 +15,13 @@ class CreateXmlFilesTable extends Migration
     {
         Schema::create('xml_files', function (Blueprint $table) {
             $table->id();
-            $table->string('filename');
+            $table->string('custom_name');
+            $table->string('description');
+            $table->string('upload_file_name');
+            $table->string('converted_file_name');
+            $table->string('source_file-link');
+            $table->enum('type', ['url', 'file']);
             $table->timestamp('uploadDateTime')->nullable();
-            $table->timestamp('lastCheckDateTime')->nullable();
             $table->timestamps();
         });
     }

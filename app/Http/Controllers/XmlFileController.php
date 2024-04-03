@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Converters\ConverterTypeA;
 use App\Application\Converters\ConverterTypeB;
+use App\Application\FileManager\LinkUploader;
 use App\Application\FileManager\Uploader;
 use App\Models\XmlFile;
 use Illuminate\Http\Request;
@@ -17,21 +18,23 @@ use SimpleXMLElement;
 class XmlFileController extends Controller
 {
     private $globalConvertor;
+    private $globalUploader;
 
     public function  __construct(
         private readonly Uploader $uploader,
+        private readonly LinkUploader $linkUploader,
         private readonly ConverterTypeA $converterTypeA,
         private readonly ConverterTypeB $converterTypeB,
     ){
 
     }
 
-    public function prepareConvertor($uploadType){
-        switch ($uploadType) {
-            case 'type1':
+    public function prepareConvertor($XmlType){
+        switch ($XmlType) {
+            case 'typeA':
                 $this->globalConvertor = $this->converterTypeA;
                 break;
-            case 'type2':
+            case 'typeB':
                 $this->globalConvertor = $this->converterTypeB;
                 break;
         }
@@ -40,31 +43,45 @@ class XmlFileController extends Controller
     public function upload(Request $request)
     {
 
+        /* Cheking xml type */
+        $XmlType = $request->input('XmlType');
+        $this->prepareConvertor($XmlType);
+
+        /* Cheking upload type */
         $uploadType = $request->input('uploadType');
 
-        $this->prepareConvertor($uploadType);
+        switch ($uploadType) {
 
-        /*
-        Получаем тип загружаемого файла
-        Не в зависимости от того, какой тип файла мы загружаем, мы должны
-        его сначала поместить на сервер
-        */
+            case 'file':
 
-        // Оригинальное название файла
-        $originalFileName = time().'_'.
-            $request->input('shopName') . ' ' .
-            $request->file('file')->getClientOriginalName();
+                // Загружаем оригинальный файл на сервер
+                $uploadFilePath = $this->uploader->upload(
+                    $request->file('file')
+                );
 
-        // Название файла после конвертации
-        $convertedFileName = $originalFileName.'_converted_type'.$uploadType;
+                break;
 
-        // Загружаем оригинальный файл на сервер
-        $uploadFilePath = $this->uploader->upload(
-            $request->file('file'),
-            $originalFileName
-        );
+            case 'link':
+
+                // Загружаем оригинальный файл на сервер
+                $uploadFilePath = $this->linkUploader->upload(
+                    $request->input('remoteFileLink')
+                );
+
+                break;
+        }
 
 
+
+
+
+
+
+
+
+
+
+        dd('OKEY!! MOTHER FUCKER!!!');
 
         // Конвертируем
         $this->globalConvertor->convert
