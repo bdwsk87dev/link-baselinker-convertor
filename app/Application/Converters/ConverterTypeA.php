@@ -20,9 +20,6 @@ class ConverterTypeA
         /** Создаем объект SimpleXMLElement из данных XML */
         $xml = new SimpleXMLElement($xmlData);
 
-        /** Доступ к корневому элементу <shop> */
-        $shop = $xml;
-
         /** Создание YML-документа */
         $yml = new DOMDocument('1.0', 'utf-8');
         $yml->appendChild($yml->createElement('yml_catalog'));
@@ -122,6 +119,9 @@ class ConverterTypeA
             /** Description */
             $offer->appendChild($yml->createElement('description', $product->description));
 
+            /** Description_uk */
+            $offer->appendChild($yml->createElement('description_uk', ''));
+
             /** Pictures */
             for ($i = 0; $i <= 15; $i++) {
                 $imageKey = 'image' . ($i > 0 ? '_extra_' . $i : '');
@@ -138,12 +138,10 @@ class ConverterTypeA
             foreach ($product->attributes->attribute as $attribute) {
 
                 // Создаем элемент param
-                $paramElement = $yml->createElement('param');
+                $paramElement = $yml->createElement('param', $attribute->attribute_value);
 
                 // Устанавливаем атрибуты name и value
                 $paramElement->setAttribute('name', $attribute->attribute_name);
-                $paramElement->setAttribute('value', $attribute->attribute_value);
-
                 // Добавляем элемент param в offer
                 $offer->appendChild($paramElement);
             }
