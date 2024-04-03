@@ -3,13 +3,21 @@
 namespace App\Application\Converters;
 
 use DOMDocument;
+use DOMException;
+use Exception;
 use SimpleXMLElement;
 
 class ConverterTypeB
 {
-    public function __construct(){
+    public function __construct()
+    {
+
     }
 
+    /**
+     * @throws DOMException
+     * @throws Exception
+     */
     public function convert(
         $uploadFilePath,
         $params
@@ -49,7 +57,8 @@ class ConverterTypeB
 
             /** Название товара */
             if (isset($product->name)) {
-                $offer->appendChild($yml->createElement('name', $product->name));
+                $name = htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8');
+                $offer->appendChild($yml->createElement('name', $name));
             }
 
             /** Категория товара */
@@ -59,7 +68,8 @@ class ConverterTypeB
 
             /** Описание товара */
             if (isset($product->desc)) {
-                $offer->appendChild($yml->createElement('description', $product->desc));
+                $descriptionContent = htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8');
+                $offer->appendChild($yml->createElement('description', $descriptionContent));
             }
 
             /** Картинки товара */

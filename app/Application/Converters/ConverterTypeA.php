@@ -3,6 +3,8 @@
 namespace App\Application\Converters;
 
 use DOMDocument;
+use DOMException;
+use Exception;
 use SimpleXMLElement;
 
 class ConverterTypeA
@@ -10,6 +12,10 @@ class ConverterTypeA
     public function __construct(){
     }
 
+    /**
+     * @throws DOMException
+     * @throws Exception
+     */
     public function convert(
         $uploadFilePath,
         $params
@@ -53,7 +59,13 @@ class ConverterTypeA
             // Категории
             $categoryElement = $yml->createElement('category');
             $categoryElement->setAttribute('id', $categoryName['id']);
-            $categoryElement->appendChild($yml->createTextNode($categoryName['name']));
+
+            // OR
+            $categoryElement->appendChild($yml->createCDATASection($categoryName['name']));
+
+            // OR
+            // $categoryElement->appendChild($yml->createTextNode($categoryName['name']));
+
             $categoriesTag->appendChild($categoryElement);
         }
 
@@ -83,7 +95,8 @@ class ConverterTypeA
             /** Название товара */
             if(isset($product->name))
             {
-                $offer->appendChild($yml->createElement('name', $product->name));
+                $nameElement = $offer->appendChild($yml->createElement('name'));
+                $nameElement->appendChild($yml->createCDATASection($product->name));
             }
 
             /** Название товара укр */
@@ -117,7 +130,8 @@ class ConverterTypeA
             $offer->appendChild($yml->createElement('url', ''));
 
             /** Description */
-            $offer->appendChild($yml->createElement('description', $product->description));
+            $descriptionElement = $offer->appendChild($yml->createElement('description'));
+            $descriptionElement->appendChild($yml->createCDATASection($product->description));
 
             /** Description_uk */
             $offer->appendChild($yml->createElement('description_uk', ''));
@@ -152,7 +166,8 @@ class ConverterTypeA
     }
 
 
-    public function lettersToNumbers($input) {
+    public function lettersToNumbers($input): string
+    {
 
         $input = strtoupper($input);
 
@@ -162,7 +177,7 @@ class ConverterTypeA
             'K' => 11, 'L' => 12, 'M' => 13, 'N' => 14, 'O' => 15,
             'P' => 16, 'Q' => 17, 'R' => 18, 'S' => 19, 'T' => 20,
             'U' => 21, 'V' => 22, 'W' => 23, 'X' => 24, 'Y' => 25,
-            'Z' => 26, 'ł' => 27, 'ó' => 28
+            'Z' => 26, 'Ł' => 27, 'Ó' => 28, 'ł' => 29, 'ó' => 30,
         ];
 
         $result = '';
@@ -175,8 +190,9 @@ class ConverterTypeA
             if (ctype_alpha($char) && isset($letterNumberMap[$char])) {
                 $result .= $letterNumberMap[$char];
             } else {
-                // Если символ не буква или нет в таблице, оставляем его как есть
-                $result .= $char;
+                // Если символ не буква или нет в таблице, оставляем его как есть или пустоту
+                // $result .= $char;
+                $result .= '1';
             }
         }
 
@@ -184,3 +200,7 @@ class ConverterTypeA
     }
 
 }
+
+
+// createTextNode
+// $categoryElement->appendChild($yml->createTextNode($categoryName['name']));
