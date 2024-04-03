@@ -4,11 +4,12 @@ import { InertiaLink, Head } from '@inertiajs/inertia-react';
 
 const Home = ({ xmlFiles }) => {
     const [file, setFile] = useState(null);
-    const [customName, setcustomName] = useState('');
+    const [customName, setCustomName] = useState('');
     const [description, setDescription] = useState('');
     const [uploadType, setUploadType] = useState('file');
     const [xmlType, setXmlType] = useState('typeA');
     const [remoteFileLink, setRemoteFileLink] = useState('');
+    const [currency, setCurrency] = useState('PLN');
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -32,6 +33,7 @@ const Home = ({ xmlFiles }) => {
         formData.append('description', description);
         formData.append('uploadType', uploadType);
         formData.append('xmlType', xmlType);
+        formData.append('currency', currency);
         Inertia.post('/api/upload', formData);
     };
 
@@ -145,13 +147,28 @@ const Home = ({ xmlFiles }) => {
                     )}
 
                     <br/>
+
+                    <label>Currency</label>
+                    <input
+                        type="text"
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        placeholder="Currency"
+                    />
+
+                    <br/>
+
+                    <label>Custom name ( for administration )</label>
                     <input
                         type="text"
                         value={customName}
-                        onChange={(e) => setcustomName(e.target.value)}
+                        onChange={(e) => setCustomName(e.target.value)}
                         placeholder="Custom name"
                     />
+
                     <br/>
+
+                    <label>Description ( for administration )</label>
                     <input
                         type="text"
                         value={description}

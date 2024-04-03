@@ -73,10 +73,16 @@ class XmlFileController extends Controller
                 break;
         }
 
+
+
+
         // Конвертируем
         $this->globalConvertor->convert
         (
-            $uploadFilePath
+            $uploadFilePath,
+            [
+                'currency' => $request->input('currency')
+            ]
         );
 
 

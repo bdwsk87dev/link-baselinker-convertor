@@ -3,7 +3,6 @@
 namespace App\Application\Converters;
 
 use DOMDocument;
-use Illuminate\Support\Facades\Storage;
 use SimpleXMLElement;
 
 class ConverterTypeA
@@ -12,7 +11,8 @@ class ConverterTypeA
     }
 
     public function convert(
-        $uploadFilePath
+        $uploadFilePath,
+        $params
     ){
 
         $xmlData = file_get_contents($uploadFilePath);
@@ -46,8 +46,9 @@ class ConverterTypeA
                 $categoryNumber = $this->lettersToNumbers($product->category_name);
 
                 // Добавляем категорию в массив
-                $categories[$product->category_name]['id'] = $categoryNumber;
-                $categories[$product->category_name]['name'] = $product->category_name;
+                $categoryName = (string) $product->category_name;
+                $categories[$categoryName]['id'] = $categoryNumber;
+                $categories[$categoryName]['name'] = $categoryName;
             }
         }
 
@@ -70,38 +71,70 @@ class ConverterTypeA
             $offer = $shop->appendChild($yml->createElement('offer'));
 
             /** ID товара */
-            $offer->setAttribute('id', $product->product_id);
+            if(isset($product->product_id))
+            {
+                $offer->setAttribute('id', $product->product_id);
+            }
 
             /** Категория товара */
-            $offer->appendChild($yml->createElement('categoryId', $categories[$product->category_name]));
+            $categoryName = (string) $product->category_name;
+            if(isset($categories[$categoryName]))
+            {
+                $offer->appendChild($yml->createElement('categoryId', $categories[$categoryName]['id']));
+            }
 
             /** Название товара */
-            $offer->appendChild($yml->createElement('name', $product->name));
+            if(isset($product->name))
+            {
+                $offer->appendChild($yml->createElement('name', $product->name));
+            }
 
             /** Название товара укр */
             $offer->appendChild($yml->createElement('name_uk', ''));
 
-            /** Цена */
-            $offer->appendChild($yml->createElement('price', $product->price));
-
-            // Валюта
-            $offer->appendChild($yml->createElement('currencyId', 'PLN'));
-
-
-
-
-
-
-
-            // Описание
-            $offer->appendChild($yml->createElement('description', $product->description));
-
-            // Изображения
-            foreach ($product->image as $image) {
-                $offer->appendChild($yml->createElement('picture', $image));
+            /** Валюта */
+            if(isset($params['currency']))
+            {
+                $offer->appendChild($yml->createElement('currencyId', $params['currency']));
             }
 
-            // Дополнительные параметры
+            /** Цена */
+            if(isset($product->price))
+            {
+                $offer->appendChild($yml->createElement('price', $product->price));
+            }
+
+            /** Vendor */
+            if(isset($product->manufacturer_name))
+            {
+                $offer->appendChild($yml->createElement('vendor', $product->manufacturer_name));
+            }
+
+            /** Vendor Code */
+            $offer->appendChild($yml->createElement('vendorCode', ''));
+
+            /** country_of_origin */
+            $offer->appendChild($yml->createElement('country_of_origin', ''));
+
+            /** Url */
+            $offer->appendChild($yml->createElement('url', ''));
+
+            /** Description */
+            $offer->appendChild($yml->createElement('description', $product->description));
+
+            /** Pictures */
+            for ($i = 0; $i <= 15; $i++) {
+                $imageKey = 'image' . ($i > 0 ? '_extra_' . $i : '');
+                if (isset($product->$imageKey)) {
+                    $imageUrl = (string) $product->$imageKey;
+                    if (!empty($imageUrl)) {
+                        $pictureNode = $offer->appendChild($yml->createElement('picture'));
+                        $pictureNode->appendChild($yml->createCDATASection($imageUrl));
+                    }
+                }
+            }
+
+            /** Дополнительные параметры */
             foreach ($product->attributes->attribute as $attribute) {
 
                 // Создаем элемент param
@@ -116,7 +149,7 @@ class ConverterTypeA
             }
         }
 
-        // Сохранение YML-файла
+        /** Сохранение YML-файла */
         $yml->save($uploadFilePath."_converted.xml");
     }
 
