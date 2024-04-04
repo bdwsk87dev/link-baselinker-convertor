@@ -47,9 +47,8 @@ class ConverterTypeA
 
                 // Преобразуем буквы категории в числа
                 $categoryNumber = $this->lettersToNumbers($product->category_name);
-
-                // Добавляем категорию в массив
                 $categoryName = (string) $product->category_name;
+
                 $categories[$categoryName]['id'] = $categoryNumber;
                 $categories[$categoryName]['name'] = $categoryName;
             }
@@ -78,6 +77,8 @@ class ConverterTypeA
 
             /** Создаём тег offer */
             $offer = $shop->appendChild($yml->createElement('offer'));
+
+            $offer->setAttribute('available', 'true');
 
             /** ID товара */
             if(isset($product->product_id))

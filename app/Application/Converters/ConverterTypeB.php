@@ -35,6 +35,29 @@ class ConverterTypeB
         /** Добавление информации о магазине */
         $shop = $yml->documentElement->appendChild($yml->createElement('shop'));
 
+        /** Добавляем тег категорий */
+        $categoriesTag = $shop->appendChild($yml->createElement('categories'));
+
+        $categories = [];
+        foreach ($xml->o as $product) {
+            if(isset($product->cat)){
+
+                // Преобразуем буквы категории в числа
+                $categoryNumber = $this->lettersToNumbers($product->cat);
+                $categoryName = (string) $product->cat;
+
+                $categories[$categoryName]['id'] = $categoryNumber;
+                $categories[$categoryName]['name'] = $categoryName;
+            }
+        }
+
+        foreach ($categories as $categoryName){
+            $categoryElement = $yml->createElement('category');
+            $categoryElement->setAttribute('id', $categoryName['id']);
+            $categoryElement->appendChild($yml->createCDATASection(trim($categoryName['name'])));
+            $categoriesTag->appendChild($categoryElement);
+        }
+
         /** Обработка товаров */
         foreach ($xml->o as $product) {
             /** Создаём тег offer */
@@ -45,20 +68,24 @@ class ConverterTypeB
                 $offer->setAttribute('id', $product['id']);
             }
 
+            /** Available true */
+            $offer->setAttribute('available', 'true');
+
             /** URL товара */
             if (isset($product['url'])) {
-                $offer->setAttribute('url', $product['url']);
+                $nameElement = $offer->appendChild($yml->createElement('url'));
+                $nameElement->appendChild($yml->createCDATASection(trim($product['url'])));
             }
 
             /** Цена товара */
             if (isset($product['price'])) {
-                $offer->setAttribute('price', $product['price']);
+                $offer->appendChild($yml->createElement('price', $product['price']));
             }
 
             /** Название товара */
             if (isset($product->name)) {
-                $name = htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8');
-                $offer->appendChild($yml->createElement('name', $name));
+                $nameElement = $offer->appendChild($yml->createElement('name'));
+                $nameElement->appendChild($yml->createCDATASection(trim($product->name)));
             }
 
             /** Категория товара */
@@ -93,5 +120,38 @@ class ConverterTypeB
 
         return $uploadFilePath."_c_.xml";
 
+    }
+
+    public function lettersToNumbers($input): string
+    {
+
+        $input = strtoupper($input);
+
+        $letterNumberMap = [
+            'A' => 1, 'B' => 2, 'C' => 3, 'D' => 4, 'E' => 5,
+            'F' => 6, 'G' => 7, 'H' => 8, 'I' => 9, 'J' => 10,
+            'K' => 11, 'L' => 12, 'M' => 13, 'N' => 14, 'O' => 15,
+            'P' => 16, 'Q' => 17, 'R' => 18, 'S' => 19, 'T' => 20,
+            'U' => 21, 'V' => 22, 'W' => 23, 'X' => 24, 'Y' => 25,
+            'Z' => 26, 'Ł' => 27, 'Ó' => 28, 'ł' => 29, 'ó' => 30,
+        ];
+
+        $result = '';
+
+        // Проходим по каждому символу в строке
+        for ($i = 0; $i < strlen($input); $i++) {
+            $char = $input[$i];
+
+            // Если символ буква и есть в таблице соответствия, добавляем число в результат
+            if (ctype_alpha($char) && isset($letterNumberMap[$char])) {
+                $result .= $letterNumberMap[$char];
+            } else {
+                // Если символ не буква или нет в таблице, оставляем его как есть или пустоту
+                // $result .= $char;
+                $result .= '1';
+            }
+        }
+
+        return $result;
     }
 }
