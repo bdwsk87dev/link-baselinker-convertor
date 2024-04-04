@@ -50,7 +50,7 @@ class XmlTranslator
                 $description = (string)$offer->description;
 
                 // Проверить условия перевода
-                if ($isTranslateName) {
+                if ($isTranslateName === 'true' ) {
                     // Вызов метода перевода для имени товара
                     $translatedName = $this->deepL->translate(
                         [
@@ -60,11 +60,12 @@ class XmlTranslator
                         ],
                         $apiKey
                     );
+
                     // Замена переведенного имени в XML
-                    $offer->name_uk = $translatedName;
+                    $offer->name_uk = $translatedName->text;
                 }
 
-                if ($isTranslateDescription) {
+                if ($isTranslateDescription === 'true') {
                     // Вызов метода перевода для описания товара
                     $translatedDescription = $this->deepL->translate(
                         [
@@ -75,7 +76,7 @@ class XmlTranslator
                         $apiKey
                     );
                     // Замена переведенного описания в XML
-                    $offer->description_uk = $translatedDescription;
+                    $offer->description_uk = $translatedDescription->text;
                 }
             }
             // Сохранить обновленный XML в файл

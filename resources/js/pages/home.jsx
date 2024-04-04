@@ -183,14 +183,6 @@ const Home = ({ xmlFiles }) => {
 
                     <br/>
 
-                    {Array.isArray(xmlFiles) && xmlFiles.length > 0 ? (
-                        xmlFiles.map((xmlFile) => (
-                            <p key={xmlFile.id}>{xmlFile.filename}</p>
-                        ))
-                    ) : (
-                        <p>No file yet</p>
-                    )}
-
                     <button type="submit">Upload</button>
                 </form>
             </div>

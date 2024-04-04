@@ -13,7 +13,7 @@ const EditForm = ({ productId, onClose }) => {
 
     const [completionPercentage, setCompletionPercentage] = useState(0);
     const [translated, setTranslated] = useState(0);
-    const [translateError , setError] = useState(null);
+    const [translateError , setError] = useState('Внимание не тыкать несколько раз кнопку перевода!!! После зевершения перевода вместо этого текста появится ОК');
 
     const fetchCompletionPercentage = async () => {
         try {
