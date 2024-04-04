@@ -63,6 +63,7 @@ class ConverterTypeB
             /** Создаём тег offer */
             $offer = $shop->appendChild($yml->createElement('offer'));
 
+
             /** ID товара */
             if (isset($product['id'])) {
                 $offer->setAttribute('id', $product['id']);
@@ -71,15 +72,12 @@ class ConverterTypeB
             /** Available true */
             $offer->setAttribute('available', 'true');
 
-            /** URL товара */
-            if (isset($product['url'])) {
-                $nameElement = $offer->appendChild($yml->createElement('url'));
-                $nameElement->appendChild($yml->createCDATASection(trim($product['url'])));
-            }
-
-            /** Цена товара */
-            if (isset($product['price'])) {
-                $offer->appendChild($yml->createElement('price', $product['price']));
+            /** Категория товара */
+            $categoryName = (string) $product->cat;
+            if (isset($product->cat)) {
+                {
+                    $offer->appendChild($yml->createElement('categoryId', $categories[$categoryName]['id']));
+                }
             }
 
             /** Название товара */
@@ -88,21 +86,53 @@ class ConverterTypeB
                 $nameElement->appendChild($yml->createCDATASection(trim($product->name)));
             }
 
-            /** Категория товара */
-            if (isset($product->cat)) {
-                $offer->appendChild($yml->createElement('category', $product->cat));
+            /** Название товара укр */
+            $offer->appendChild($yml->createElement('name_uk', ''));
+
+            /** Валюта */
+            if(isset($params['currency']))
+            {
+                $offer->appendChild($yml->createElement('currencyId', $params['currency']));
+            }
+
+            /** Цена товара */
+            if (isset($product['price'])) {
+                $offer->appendChild($yml->createElement('price', $product['price']));
+            }
+
+            /** Vendor */
+            $offer->appendChild($yml->createElement('vendor', ''));
+
+            /** Vendor Code */
+            $offer->appendChild($yml->createElement('vendorCode', ''));
+
+            /** country_of_origin */
+            $offer->appendChild($yml->createElement('country_of_origin', ''));
+
+            /** URL товара */
+            if (isset($product['url'])) {
+                $nameElement = $offer->appendChild($yml->createElement('url'));
+                $nameElement->appendChild($yml->createCDATASection(trim($product['url'])));
             }
 
             /** Описание товара */
             if (isset($product->desc)) {
-                $descriptionContent = htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8');
-                $offer->appendChild($yml->createElement('description', $descriptionContent));
+                $descriptionElement = $offer->appendChild($yml->createElement('description'));
+                $descriptionElement->appendChild($yml->createCDATASection(trim($product->desc)));
             }
 
+            /** Description_uk */
+            $offer->appendChild($yml->createElement('description_uk', ''));
+
             /** Картинки товара */
-            if (isset($product->imgs->main['url'])) {
-                $pictureNode = $offer->appendChild($yml->createElement('picture'));
-                $pictureNode->appendChild($yml->createCDATASection($product->imgs->main['url']));
+            if (isset($product->imgs)) {
+                foreach ($product->imgs->children() as $img) {
+                    $url = (string) $img['url'];
+                    if (!empty($url)) {
+                        $pictureNode = $offer->appendChild($yml->createElement('picture'));
+                        $pictureNode->appendChild($yml->createCDATASection($url));
+                    }
+                }
             }
 
             /** Дополнительные атрибуты товара */
@@ -117,9 +147,7 @@ class ConverterTypeB
 
         /** Сохранение YML-файла */
         $yml->save($uploadFilePath."_c_.xml");
-
         return $uploadFilePath."_c_.xml";
-
     }
 
     public function lettersToNumbers($input): string

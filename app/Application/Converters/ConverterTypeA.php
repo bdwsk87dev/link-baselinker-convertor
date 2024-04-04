@@ -86,6 +86,9 @@ class ConverterTypeA
                 $offer->setAttribute('id', $product->product_id);
             }
 
+            /** Available true */
+            $offer->setAttribute('available', 'true');
+
             /** Категория товара */
             $categoryName = (string) $product->category_name;
             if(isset($categories[$categoryName]))
@@ -132,7 +135,7 @@ class ConverterTypeA
 
             /** Description */
             $descriptionElement = $offer->appendChild($yml->createElement('description'));
-            $descriptionElement->appendChild($yml->createCDATASection($product->description));
+            $descriptionElement->appendChild($yml->createCDATASection(trim($product->description)));
 
             /** Description_uk */
             $offer->appendChild($yml->createElement('description_uk', ''));
