@@ -142,7 +142,27 @@ class XmlFileController extends Controller
     }
 
 
+    public function delete
+    (
+        $id
+    ): \Illuminate\Http\RedirectResponse
+    {
+        $xmlFile = XmlFile::findOrFail($id);
 
+        // Удалите файл с сервера
+        if (File::exists($xmlFile->converted_full_patch)) {
+            File::delete($xmlFile->converted_full_patch);
+        }
+
+        if (File::exists($xmlFile->upload_full_patch)) {
+            File::delete($xmlFile->upload_full_patch);
+        }
+
+        // Удалите запись из базы данных
+        $xmlFile->delete();
+
+        return redirect()->back()->with('success', 'File and record deleted successfully.');
+    }
 
 
 
