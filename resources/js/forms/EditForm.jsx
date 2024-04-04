@@ -83,7 +83,7 @@ const EditForm = ({ productId, onClose }) => {
                                 checked={formData.translateName}
                                 onChange={handleChange}
                             />
-                            Переводить имя
+                            Translate all product names
                         </label>
                     </div>
                     <div>
@@ -94,7 +94,7 @@ const EditForm = ({ productId, onClose }) => {
                                 checked={formData.translateDescription}
                                 onChange={handleChange}
                             />
-                            Переводить описание
+                            Translate all product descriptions
                         </label>
                     </div>
                     <button className="updateButton" type="submit">Translate</button>

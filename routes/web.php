@@ -23,7 +23,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/delete/{id}', [XmlFileController::class, 'delete'])->name('xml.delete');
 
-    Route::post('/api/translate', [XmlFileController::class, 'delete'])->name('xml.delete');
+    Route::post('/api/translate', [XmlFileController::class, 'translate'])->name('xml.translate');
 
     Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list');
 

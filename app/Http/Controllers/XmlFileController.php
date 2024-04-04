@@ -164,8 +164,13 @@ class XmlFileController extends Controller
         return redirect()->back()->with('success', 'File and record deleted successfully.');
     }
 
-
-
+    public function translate
+    (
+        $id
+    )
+    {
+        $xmlFile = XmlFile::findOrFail($id);
+    }
 
 
 
