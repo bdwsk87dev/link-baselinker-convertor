@@ -286,7 +286,7 @@ const List = ({xmlFiles}) => {
             </table>
 
 
-            <table style={{width: '100%', borderCollapse: 'collapse'}}>
+            <table style={{fontSize:'10px', width: '100%', borderCollapse: 'collapse'}}>
                 <thead>
                 <tr>
                     <th onClick={() => sortBy('id')} style={{
@@ -390,11 +390,11 @@ const List = ({xmlFiles}) => {
                         <td style={{width:'170px', padding: '8px', border: '1px solid #ddd'}}>
                             <button className="btn btn-primary edit-button custom-edit-button"
                                     onClick={() => handleEdit(xmlFile.id)}>
-                                Редагувати
+                                Translate me
                             </button>
                             <button className="btn btn-danger delete-button custom-delete-button"
                                     onClick={() => handleDelete(xmlFile.id)}>
-                                Видалити
+                                Delete me
                             </button>
                         </td>
                     </tr>
