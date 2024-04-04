@@ -13,6 +13,8 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
 
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
     Route::get('/home', function () {
         return Inertia::render('home');
     })->name('home');
@@ -43,5 +45,6 @@ Route::middleware(['guest'])->group(function () {
 
     Route::post('/register', [AuthController::class, 'register']);
 });
+
 
 Route::get('/api/show/{id}', [XmlFileController::class, 'show'])->name('xml.show');

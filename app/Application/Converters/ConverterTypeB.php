@@ -7,7 +7,7 @@ use DOMException;
 use Exception;
 use SimpleXMLElement;
 
-class ConverterTypeB implements XmlConverterInterface
+class ConverterTypeB
 {
     public function __construct()
     {
@@ -89,7 +89,9 @@ class ConverterTypeB implements XmlConverterInterface
         }
 
         /** Сохранение YML-файла */
-        $yml->save($uploadFilePath . "_converted.xml");
+        $yml->save($uploadFilePath."_c_.xml");
+
+        return $uploadFilePath."_c_.xml";
 
     }
 }

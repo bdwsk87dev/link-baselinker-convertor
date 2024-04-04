@@ -107,6 +107,11 @@ const Home = ({ xmlFiles }) => {
             <div className="home-container">
                 <h1>CONVERTEDZILLA</h1>
                 <div>
+                    <InertiaLink href="/list" target="_blank" rel="noopener noreferrer">
+                        show converted links
+                    </InertiaLink>
+                    <br/>
+                    <br/>
                     <InertiaLink href="/logout">logout</InertiaLink>
                 </div>
                 <form className="upload-form" encType="multipart/form-data" onSubmit={handleSubmit}>

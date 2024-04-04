@@ -9,11 +9,13 @@ class XmlFile extends Model
     protected $table = 'xml_files';
 
     protected $fillable = [
-        'filename',
+        'custom_name',
+        'description',
+        'upload_full_patch',
+        'converted_full_patch',
+        'source_file_link',
         'uploadDateTime',
-        'lastCheckDateTime',
-        'shop_name',
-        'shop_link'
+        'type'
     ];
 
 }

@@ -16,7 +16,7 @@ class Uploader
         $fileName = time().'_'.
             $file->getClientOriginalName();
 
-        $file->storeAs('public/uploads/originals/', "F_".$fileName);
-        return Storage::path('public/uploads/originals/'."F_".$fileName);
+        $file->storeAs('public/uploads/xml/', "F_".$fileName);
+        return Storage::path('public/uploads/xml/'."F_".$fileName);
     }
 }

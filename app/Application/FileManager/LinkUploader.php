@@ -28,9 +28,9 @@ class LinkUploader
         $fileContent = $this->httpClient->get($remoteFileLink)->body();
 
         // Сохраняем содержимое файла в хранилище
-        Storage::put('public/uploads/originals/'.'L_'.$fileName.'.xml', $fileContent);
+        Storage::put('public/uploads/xml/'.'L_'.$fileName.'.xml', $fileContent);
 
         // Возвращаем путь к загруженному файлу
-        return Storage::path('public/uploads/originals/'.'L_'. $fileName.'.xml');
+        return Storage::path('public/uploads/xml/'.'L_'. $fileName.'.xml');
     }
 }

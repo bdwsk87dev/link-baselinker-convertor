@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Converters\ConverterTypeA;
+use App\Application\Converters\ConverterTypeB;
 use App\Application\FileManager\LinkUploader;
 use App\Application\FileManager\Uploader;
 use App\Models\XmlFile;
 use Illuminate\Http\Request;
-use League\CommonMark\ConverterInterface;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
@@ -15,13 +16,13 @@ use SimpleXMLElement;
 
 class XmlFileController extends Controller
 {
-    private ConverterInterface $globalConvertor;
+    private ConverterTypeA|ConverterTypeB $globalConvertor;
 
     public function  __construct(
         private readonly Uploader $uploader,
         private readonly LinkUploader $linkUploader,
-        private readonly ConverterInterface $converterTypeA,
-        private readonly ConverterInterface $converterTypeB,
+        private readonly ConverterTypeA $converterTypeA,
+        private readonly ConverterTypeB $converterTypeB,
     ){
 
     }
@@ -67,10 +68,14 @@ class XmlFileController extends Controller
                 );
 
                 break;
+
+            default:
+                return false;
+                break;
         }
 
         // Конвертируем
-        $this->globalConvertor->convert
+        $convertedFilePatch = $this->globalConvertor->convert
         (
             $uploadFilePath,
             [
@@ -78,91 +83,18 @@ class XmlFileController extends Controller
             ]
         );
 
-
         XmlFile::create([
-                    'filename' => $newFileName,
-                    'shop_name' => $shopName,
-                    'shop_link' => $shopLink,
-                    'uploadDateTime' => now(),
-                    'lastCheckDateTime' => now(),
-                ]);
+            'custom_name' => $request->input('customName'),
+            'description' => $request->input('description'),
+            'upload_full_patch' => $uploadFilePath,
+            'converted_full_patch' => $convertedFilePatch,
+            'source_file_link' => $request->input('remoteFileLink') ?: '',
+            'uploadDateTime' => now(),
+            'type' => $uploadType,
+        ]);
 
-        dd('OKEY!! MOTHER FUCKER!!!');
-
-
-
-//        // $currentDateTime = now()->format('d_m H:i');
-//        $currentDateTime = time();
-//
-//
-//        if ($uploadType === "xlsx") {
-//
-//            // Handle xlsx file upload and conversion to XML
-//
-//            $updatedFileName = $currentDateTime . ' ' . $fileName;
-//
-//            // Save the uploaded file
-//            $file->storeAs('uploads/originals/', $updatedFileName, 'public');
-//
-//            // Convert xlsx to XML
-//            $convertedFilePath = $this->convertXlsxToXml($updatedFileName, $newFileName);
-//
-//            if ($convertedFilePath) {
-//                // Store the converted XML file
-//                $convertedFileContent = File::get($convertedFilePath);
-//                Storage::disk('public')->put('uploads/' . $newFileName, $convertedFileContent);
-//
-//                // Remove the temporary converted file
-//                // File::delete($updatedFileName);
-//
-//                // Create a database record for the uploaded XML file
-//                XmlFile::create([
-//                    'filename' => $newFileName,
-//                    'shop_name' => $shopName,
-//                    'shop_link' => $shopLink,
-//                    'uploadDateTime' => now(),
-//                    'lastCheckDateTime' => now(),
-//                ]);
-//                return redirect()->back()->with('success', 'File uploaded and converted successfully.');
-//            } else {
-//                return redirect()->back()->with('error', 'Failed to convert the file to XML.');
-//            }
-//        } else {
-//            $file = $request->file('file');
-//            $shopName = $request->input('shopName'); // Получаем значение shopName из запроса
-//            $shopLink = $request->input('shopLink'); // Получаем значение shopLink из запроса
-//            $fileName = $file->getClientOriginalName();
-//            // $currentDateTime = now()->format('d_m H:i');
-//            $currentDateTime = time();
-//            $NewFileName = $shopName . ' ' . $currentDateTime . '.xml'; // Формируем новое имя файла
-//
-//            $file->storeAs('uploads', $NewFileName, 'public');
-//            // Создаем запись в базе данных для загруженного файла
-//            XmlFile::create([
-//                'filename' => $NewFileName,
-//                'shop_name' => $shopName,
-//                'shop_link' => $shopLink,
-//                'uploadDateTime' => now(),
-//                'lastCheckDateTime' => now(),
-//            ]);
-//            return redirect()->back()->with('success', 'File uploaded successfully.');
-//        }
+        echo "Готово!";
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     public function index(Request $request): \Inertia\Response|\Inertia\ResponseFactory

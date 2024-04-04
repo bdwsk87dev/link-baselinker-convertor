@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Application\Converters\ConverterTypeA;
+use App\Application\Converters\ConverterTypeB;
 use Illuminate\Support\ServiceProvider;
+use League\CommonMark\ConverterInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
