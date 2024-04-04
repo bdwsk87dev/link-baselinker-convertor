@@ -21,8 +21,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/api/upload', [XmlFileController::class, 'upload'])->name('xml.upload');
 
-    Route::post('/api/edit', [XmlFileController::class, 'edit'])->name('xml.edit');
-
     Route::post('/delete/{id}', [XmlFileController::class, 'delete'])->name('xml.delete');
 
     Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list');
