@@ -4,9 +4,9 @@ import axios from 'axios';
 const EditForm = ({ productId, onClose }) => {
     const [formData, setFormData] = useState({
         productId: productId,
-        apiKey: '',
-        translateName: false,
-        translateDescription: false,
+        apiKey: '0c3ec76f-b35a-5ca9-6989-265c4a3b01d5',
+        isTranslateName: false,
+        isTranslateDescription: false,
     });
 
     const [deepLUsage, setUsage ] = useState('');
@@ -50,11 +50,11 @@ const EditForm = ({ productId, onClose }) => {
         try {
             const formDataToSend = new FormData();
             formDataToSend.append('productId', formData.productId);
-            formDataToSend.append('apiKey', formData.shop_name);
-            formDataToSend.append('translateName', formData.translateName);
-            formDataToSend.append('translateDescription', formData.translateDescription);
+            formDataToSend.append('apiKey', formData.apiKey);
+            formDataToSend.append('isTranslateName', formData.isTranslateName);
+            formDataToSend.append('isTranslateDescription', formData.isTranslateDescription);
 
-            const response = await axios.post('/api/translate', formDataToSend);
+            const response = await axios.post('/api/deepl/translate', formDataToSend);
 
             if(response.data['status'] == "ok"){
                 window.location.reload();
@@ -108,8 +108,8 @@ const EditForm = ({ productId, onClose }) => {
                         <label>
                             <input
                                 type="checkbox"
-                                name="translateName"
-                                checked={formData.translateName}
+                                name="isTranslateName"
+                                checked={formData.isTranslateName}
                                 onChange={handleChange}
                             />
                             Translate all product names
@@ -119,8 +119,8 @@ const EditForm = ({ productId, onClose }) => {
                         <label>
                             <input
                                 type="checkbox"
-                                name="translateDescription"
-                                checked={formData.translateDescription}
+                                name="isTranslateDescription"
+                                checked={formData.isTranslateDescription}
                                 onChange={handleChange}
                             />
                             Translate all product descriptions

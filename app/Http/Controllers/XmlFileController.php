@@ -184,10 +184,13 @@ class XmlFileController extends Controller
 
     public function translate
     (
-        $id
+        Request $request
     )
     {
-        $xmlFile = XmlFile::findOrFail($id);
+        $productId = $request->input('productId');
+        $apiKey = $request->input('apiKey');
+        $isTranslateName = $request->input('isTranslateName');
+        $isTranslateDescription = $request->input('isTranslateDescription');
     }
 
 
