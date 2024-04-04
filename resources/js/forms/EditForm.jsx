@@ -4,7 +4,7 @@ import axios from 'axios';
 const EditForm = ({ productId, onClose }) => {
     const [formData, setFormData] = useState({
         productId: productId,
-        apiKey: '0c3ec76f-b35a-5ca9-6989-265c4a3b01d5',
+        apiKey: '',
         translateName: false,
         translateDescription: false,
     });
