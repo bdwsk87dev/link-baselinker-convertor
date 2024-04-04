@@ -4,10 +4,12 @@ import axios from 'axios';
 const EditForm = ({ productId, onClose }) => {
     const [formData, setFormData] = useState({
         productId: productId,
-        apiKey: '',
+        apiKey: '0c3ec76f-b35a-5ca9-6989-265c4a3b01d5',
         translateName: false,
         translateDescription: false,
     });
+
+    const [deepLUsage, setUsage ] = useState('');
 
     const [completionPercentage, setCompletionPercentage] = useState(0);
     const [translated, setTranslated] = useState(0);
@@ -18,6 +20,25 @@ const EditForm = ({ productId, onClose }) => {
             const percentage = response.data.percentage;
             console.log(percentage);
             setCompletionPercentage(percentage);
+        } catch (error) {
+            console.error('Ошибка при получении процента выполнения:', error);
+        }
+    };
+
+    useEffect(() => {
+
+    }, []);
+
+    const getDeepLUsage = async () => {
+        try {
+
+            const formDataToSend = new FormData();
+            formDataToSend.append('apiKey', formData.apiKey);
+
+            const response = await axios.post('/api/deepl/usage', formDataToSend);
+            const usage = response.data;
+            console.log(usage);
+            setUsage(usage);
         } catch (error) {
             console.error('Ошибка при получении процента выполнения:', error);
         }
@@ -56,12 +77,20 @@ const EditForm = ({ productId, onClose }) => {
         }));
     };
 
+    const handleGetDeepLUsage = () => {
+        getDeepLUsage(); // Вызываем метод для получения использования DeepL
+    };
+
     return (
         <div className="modal-background">
             <div className="modal">
                 <h2>Translate file</h2>
                 <div>
                 </div>
+                <div>
+                    DeeplUsage: {deepLUsage} {}
+                </div>
+
                 <p>ID: {productId}</p>
                 <form onSubmit={handleSubmit}>
                     <div>
@@ -97,6 +126,7 @@ const EditForm = ({ productId, onClose }) => {
                             Translate all product descriptions
                         </label>
                     </div>
+                    <button className="usageButton" type="button" onClick={handleGetDeepLUsage}>Get DeepL usage</button>
                     <button className="updateButton" type="submit">Translate</button>
                     <button className="closeButton" onClick={onClose}>Exit</button>
                 </form>

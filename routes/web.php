@@ -25,6 +25,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/api/translate', [XmlFileController::class, 'translate'])->name('xml.translate');
 
+    Route::post('/api/deepl/usage', [XmlFileController::class, 'deeplUsage'])->name('xml.deeplusage');
+
     Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list');
 
     Route::get('/get-completion-percentage', [XmlFileController::class, 'getCompletionPercentage']);

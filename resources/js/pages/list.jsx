@@ -242,6 +242,10 @@ const List = ({xmlFiles}) => {
                     left: 20px;
                 }
 
+                .usageButton{
+                    background-color: #292e69ee !important;
+                }
+
                  `}</style>
             </Head>
 

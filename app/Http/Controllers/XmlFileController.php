@@ -7,6 +7,8 @@ use App\Application\Converters\ConverterTypeB;
 use App\Application\FileManager\LinkUploader;
 use App\Application\FileManager\Uploader;
 use App\Models\XmlFile;
+use App\Application\Translations\DeepLApplication;
+use DeepL\DeepLException;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +25,7 @@ class XmlFileController extends Controller
         private readonly LinkUploader $linkUploader,
         private readonly ConverterTypeA $converterTypeA,
         private readonly ConverterTypeB $converterTypeB,
+        private readonly DeepLApplication $deepLApplication
     ){
 
     }
@@ -164,6 +167,21 @@ class XmlFileController extends Controller
         return redirect()->back()->with('success', 'File and record deleted successfully.');
     }
 
+    public function deeplUsage
+    (
+        Request $request
+    )
+    {
+        $apiKey = $request->input('apiKey');
+        try {
+            $result = $this->deepLApplication->usage($apiKey);
+
+        } catch (DeepLException $e) {
+            return $e->getMessage();
+        }
+        return $result;
+    }
+
     public function translate
     (
         $id
@@ -171,9 +189,6 @@ class XmlFileController extends Controller
     {
         $xmlFile = XmlFile::findOrFail($id);
     }
-
-
-
 
 
 
