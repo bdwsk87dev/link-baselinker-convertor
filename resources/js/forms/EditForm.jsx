@@ -13,6 +13,7 @@ const EditForm = ({ productId, onClose }) => {
 
     const [completionPercentage, setCompletionPercentage] = useState(0);
     const [translated, setTranslated] = useState(0);
+    const [translateError , setError] = useState(null);
 
     const fetchCompletionPercentage = async () => {
         try {
@@ -36,9 +37,14 @@ const EditForm = ({ productId, onClose }) => {
             formDataToSend.append('apiKey', formData.apiKey);
 
             const response = await axios.post('/api/deepl/usage', formDataToSend);
-            const usage = response.data;
-            console.log(usage);
-            setUsage(usage);
+
+            if(response.data['status'] === "error") {
+                setError(response.data['message']);
+            }
+            else{
+                const usage = response.data;
+                setUsage(usage);
+            }
         } catch (error) {
             console.error('Ошибка при получении процента выполнения:', error);
         }
@@ -56,14 +62,12 @@ const EditForm = ({ productId, onClose }) => {
 
             const response = await axios.post('/api/deepl/translate', formDataToSend);
 
-            if(response.data['status'] == "ok"){
-                window.location.reload();
+            if(response.data['status'] === "ok") {
+                setError('ok');
             }
-
-            setTranslated(response.data['translatedProductCount']);
-
-            console.log('Ответ от сервера:', response.data);
-
+            else{
+                setError(response.data['message']);
+            }
         } catch (error) {
             console.error('Произошла ошибка при отправке данных:', error);
         }
@@ -127,6 +131,11 @@ const EditForm = ({ productId, onClose }) => {
                         </label>
                     </div>
                     <button className="usageButton" type="button" onClick={handleGetDeepLUsage}>Get DeepL usage</button>
+
+                    <div>
+                        {translateError}
+                    </div>
+
                     <button className="updateButton" type="submit">Translate</button>
                     <button className="closeButton" onClick={onClose}>Exit</button>
                 </form>

@@ -3,6 +3,8 @@
 namespace App\Application\Translations;
 
 use App\Models\XmlFile;
+use DeepL\DeepLException;
+use Exception;
 use SimpleXMLElement;
 
 class XmlTranslator
@@ -13,7 +15,6 @@ class XmlTranslator
     ){
 
     }
-
 
     /**
      * @throws \Exception
@@ -26,57 +27,71 @@ class XmlTranslator
         $isTranslateDescription
     )
     {
-        $xmlFile = XmlFile::where('id', $productId)->first();
-        if ($xmlFile) {
-            $convertedFullPatch = $xmlFile->converted_full_patch;
-        } else {
-            return false;
-        }
 
-        $xmlData = file_get_contents($convertedFullPatch);
+        try {
 
-        // Распарсить XML-данные
-        $xml = new SimpleXMLElement($xmlData);
-
-        // Перебор каждого товара в XML
-        foreach ($xml->shop->offer as $offer) {
-            // Получить данные товара
-            $id = $offer['id'];
-            $name = (string) $offer->name;
-            $description = (string) $offer->description;
-
-            // Проверить условия перевода
-            if ($isTranslateName) {
-                // Вызов метода перевода для имени товара
-                $translatedName = $this->deepL->translate(
-                    [
-                        'text' => $name,
-                        null,
-                        'uk'
-                    ],
-                    $apiKey
-                );
-                // Замена переведенного имени в XML
-                $offer->name = $translatedName;
+            $xmlFile = XmlFile::where('id', $productId)->first();
+            if ($xmlFile) {
+                $convertedFullPatch = $xmlFile->converted_full_patch;
+            } else {
+                return false;
             }
 
-            if ($isTranslateDescription) {
-                // Вызов метода перевода для описания товара
-                $translatedDescription = $this->deepL->translate(
-                    [
-                        'text' => $description,
-                        null,
-                        'uk'
-                    ],
-                    $apiKey
-                );
-                // Замена переведенного описания в XML
-                $offer->description = $translatedDescription;
-            }
-        }
-        // Сохранить обновленный XML в файл
-        $xml->asXML($convertedFullPatch);
+            $xmlData = file_get_contents($convertedFullPatch);
 
-        return true;
+            // Распарсить XML-данные
+            $xml = new SimpleXMLElement($xmlData);
+
+            /** Перебор каждого товара в XML */
+            foreach ($xml->shop->offer as $offer) {
+                // Получить данные товара
+                $id = $offer['id'];
+                $name = (string)$offer->name;
+                $description = (string)$offer->description;
+
+                // Проверить условия перевода
+                if ($isTranslateName) {
+                    // Вызов метода перевода для имени товара
+                    $translatedName = $this->deepL->translate(
+                        [
+                            'text' => $name,
+                            null,
+                            'lang' => 'uk'
+                        ],
+                        $apiKey
+                    );
+                    // Замена переведенного имени в XML
+                    $offer->name = $translatedName;
+                }
+
+                if ($isTranslateDescription) {
+                    // Вызов метода перевода для описания товара
+                    $translatedDescription = $this->deepL->translate(
+                        [
+                            'text' => $description,
+                            null,
+                            'lang' => 'uk'
+                        ],
+                        $apiKey
+                    );
+                    // Замена переведенного описания в XML
+                    $offer->description = $translatedDescription;
+                }
+            }
+            // Сохранить обновленный XML в файл
+            $xml->asXML($convertedFullPatch);
+
+        } catch (DeepLException| Exception $e) {
+            return
+            [
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
+        }
+
+        return
+            [
+                'status' => 'ok'
+            ];
     }
 }
