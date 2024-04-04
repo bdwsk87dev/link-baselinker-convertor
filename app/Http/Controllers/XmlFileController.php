@@ -114,7 +114,9 @@ class XmlFileController extends Controller
         if ($request->has('search'))
         {
             $search = $request->get('search');
-            $xmlFiles->where('shop_name', 'like', "%{$search}%");
+            $xmlFiles->where('custom_name', 'like', "%{$search}%");
+            $xmlFiles->orWhere('description', 'like', "%{$search}%");
+            $xmlFiles->orWhere('source_file_link', 'like', "%{$search}%");
         }
 
         $perPage = $request->get('per_page', 30);
@@ -122,6 +124,11 @@ class XmlFileController extends Controller
 
         return inertia('list', compact('xmlFiles'));
     }
+
+
+
+
+
 
 
 

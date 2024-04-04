@@ -387,7 +387,7 @@ const List = ({xmlFiles}) => {
                             className="btn btn-success link-button" href={`/api/show/${xmlFile.id}`}
                             target="_blank">Link</a></td>
 
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}>
+                        <td style={{width:'170px', padding: '8px', border: '1px solid #ddd'}}>
                             <button className="btn btn-primary edit-button custom-edit-button"
                                     onClick={() => handleEdit(xmlFile.id)}>
                                 Редагувати
