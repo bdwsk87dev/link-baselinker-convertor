@@ -6,6 +6,7 @@ use App\Application\Converters\ConverterTypeA;
 use App\Application\Converters\ConverterTypeB;
 use App\Application\FileManager\LinkUploader;
 use App\Application\FileManager\Uploader;
+use App\Application\Translations\XmlTranslator;
 use App\Models\XmlFile;
 use App\Application\Translations\DeepLApplication;
 use DeepL\DeepLException;
@@ -25,7 +26,8 @@ class XmlFileController extends Controller
         private readonly LinkUploader $linkUploader,
         private readonly ConverterTypeA $converterTypeA,
         private readonly ConverterTypeB $converterTypeB,
-        private readonly DeepLApplication $deepLApplication
+        private readonly DeepLApplication $deepLApplication,
+        private readonly XmlTranslator $xmlTranslator
     ){
 
     }
@@ -187,10 +189,12 @@ class XmlFileController extends Controller
         Request $request
     )
     {
-        $productId = $request->input('productId');
-        $apiKey = $request->input('apiKey');
-        $isTranslateName = $request->input('isTranslateName');
-        $isTranslateDescription = $request->input('isTranslateDescription');
+        $this->xmlTranslator->translate(
+            $request->input('productId'),
+            $request->input('apiKey'),
+            $request->input('isTranslateName'),
+            $request->input('isTranslateDescription')
+        );
     }
 
 
@@ -198,9 +202,6 @@ class XmlFileController extends Controller
 
 
 
-
-
-//
 //    public function edit(Request $request)
 //    {
 //        $fileName = "";
