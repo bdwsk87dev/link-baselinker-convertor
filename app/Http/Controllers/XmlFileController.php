@@ -97,17 +97,22 @@ class XmlFileController extends Controller
     }
 
 
-    public function index(Request $request): \Inertia\Response|\Inertia\ResponseFactory
+    public function index
+    (
+        Request $request
+    ): \Inertia\Response|\Inertia\ResponseFactory
     {
         $xmlFiles = XmlFile::query();
 
-        if ($request->has('sort_by') && !empty($request->get('sort_by'))) {
+        if ($request->has('sort_by') && !empty($request->get('sort_by')))
+        {
             $sortColumn = $request->get('sort_by');
             $sortDirection = $request->get('order', 'asc');
             $xmlFiles->orderBy($sortColumn, $sortDirection);
         }
 
-        if ($request->has('search')) {
+        if ($request->has('search'))
+        {
             $search = $request->get('search');
             $xmlFiles->where('shop_name', 'like', "%{$search}%");
         }
@@ -117,6 +122,9 @@ class XmlFileController extends Controller
 
         return inertia('list', compact('xmlFiles'));
     }
+
+
+
 
     public function show($id)
     {

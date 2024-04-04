@@ -298,23 +298,23 @@ const List = ({xmlFiles}) => {
                         textAlign: 'left'
                     }}>ID
                     </th>
-                    <th onClick={() => sortBy('shop_name')} style={{
+                    <th onClick={() => sortBy('custom_name')} style={{
                         cursor: 'pointer',
                         padding: '8px',
                         border: '1px solid #ddd',
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Назва магазину
+                    }}>Custom name
                     </th>
-                    <th onClick={() => sortBy('shop_link')} style={{
+                    <th onClick={() => sortBy('description')} style={{
                         cursor: 'pointer',
                         padding: '8px',
                         border: '1px solid #ddd',
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Лінк на магазин
+                    }}>Description
                     </th>
                     <th onClick={() => sortBy('uploadDateTime')} style={{
                         cursor: 'pointer',
@@ -323,16 +323,36 @@ const List = ({xmlFiles}) => {
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Дата завантаження
+                    }}>Upload datetime
                     </th>
-                    <th onClick={() => sortBy('')} style={{
+
+                    <th onClick={() => sortBy('type')} style={{
                         cursor: 'pointer',
                         padding: '8px',
                         border: '1px solid #ddd',
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Остання дата редагування
+                    }}>Type
+                    </th>
+
+                    <th onClick={() => sortBy('source_file_link')} style={{
+                        cursor: 'pointer',
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>Original Link
+                    </th>
+
+                    <th style={{
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>Link
                     </th>
                     <th style={{
                         padding: '8px',
@@ -340,15 +360,7 @@ const List = ({xmlFiles}) => {
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Лінк на xml
-                    </th>
-                    <th style={{
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>Редагування
+                    }}>Edit
                     </th>
                 </tr>
                 </thead>
@@ -357,29 +369,31 @@ const List = ({xmlFiles}) => {
 
                     <tr key={xmlFile.id}>
                         <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.id}</td>
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.shop_name}</td>
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}><a href={xmlFile.shop_link}
-                                                                                  target="_blank">{xmlFile.shop_link}</a>
-                        </td>
+
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.custom_name}</td>
+
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.description}</td>
+
                         <td style={{
                             padding: '8px',
                             border: '1px solid #ddd'
-                        }}>{format(new Date(xmlFile.created_at), 'dd.MM.yyyy HH:mm:ss')}</td>
+                        }}>{format(new Date(xmlFile.uploadDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>
 
-                        {/*<td style={{ padding: '8px', border: '1px solid #ddd' }}>{format(new Date(xmlFile.lastCheckDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>*/}
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.type}</td>
 
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}></td>
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.source_file_link}</td>
 
-
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}><a className="btn btn-success link-button" href={`/api/show/${xmlFile.id}`}
-                                                                                  target="_blank">Лінк</a></td>
-
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}><a
+                            className="btn btn-success link-button" href={`/api/show/${xmlFile.id}`}
+                            target="_blank">Link</a></td>
 
                         <td style={{padding: '8px', border: '1px solid #ddd'}}>
-                            <button className="btn btn-primary edit-button custom-edit-button" onClick={() => handleEdit(xmlFile.id)}>
+                            <button className="btn btn-primary edit-button custom-edit-button"
+                                    onClick={() => handleEdit(xmlFile.id)}>
                                 Редагувати
                             </button>
-                            <button className="btn btn-danger delete-button custom-delete-button" onClick={() => handleDelete(xmlFile.id)}>
+                            <button className="btn btn-danger delete-button custom-delete-button"
+                                    onClick={() => handleDelete(xmlFile.id)}>
                                 Видалити
                             </button>
                         </td>
