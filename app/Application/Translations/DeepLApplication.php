@@ -40,6 +40,4 @@ class DeepLApplication
     {
         return $this->getTranslator($apiKey)->getUsage();
     }
-
-
 }
