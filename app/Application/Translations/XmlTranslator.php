@@ -62,7 +62,7 @@ class XmlTranslator
                     );
 
                     // Замена переведенного имени в XML
-                    $offer->name_uk = $translatedName->text;
+                    $offer->name_ua = $translatedName->text;
                 }
 
                 if ($isTranslateDescription === 'true') {
@@ -76,7 +76,7 @@ class XmlTranslator
                         $apiKey
                     );
                     // Замена переведенного описания в XML
-                    $offer->description_uk = $translatedDescription->text;
+                    $offer->description_ua = $translatedDescription->text;
                 }
             }
             // Сохранить обновленный XML в файл

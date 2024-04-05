@@ -87,7 +87,7 @@ class ConverterTypeB
             }
 
             /** Название товара укр */
-            $offer->appendChild($yml->createElement('name_uk', ''));
+            $offer->appendChild($yml->createElement('name_ua', ''));
 
             /** Валюта */
             if(isset($params['currency']))
@@ -122,7 +122,7 @@ class ConverterTypeB
             }
 
             /** Description_uk */
-            $offer->appendChild($yml->createElement('description_uk', ''));
+            $offer->appendChild($yml->createElement('description_ua', ''));
 
             /** Картинки товара */
             if (isset($product->imgs)) {
