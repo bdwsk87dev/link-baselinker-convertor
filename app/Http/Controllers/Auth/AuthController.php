@@ -1,29 +1,36 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AuthController extends Controller
 {
-    public function login(Request $request): \Illuminate\Http\RedirectResponse
+    public function login(AuthRequest $request): JsonResponse | RedirectResponse
     {
+        $request->validated();
 
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        // Валидация прошла успешно благодаря AuthRequest
 
-        if (Auth::attempt(['email' => $request->input('email'), 'password' => $request->input('password')])) {
+        if (Auth::attempt(['email' => $request->input('email'), 'password' => $request->input('password')]))
+        {
             // Авторизация прошла успешно
             return redirect()->intended('/home');
+
         } else {
             // Неверные учетные данные
-            return back()->withErrors([
-                'login' => 'The provided credentials do not match our records.',
-            ]);
+            return response()->json(
+                [
+                    'status' => 'failed',
+                    'error_code' => 'user_not_found'
+                ],200
+            );
         }
     }
 

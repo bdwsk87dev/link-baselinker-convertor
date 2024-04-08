@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\XmlFileController;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
+use Inertia\Inertia;
 
 ini_set('upload_max_filesize', '100M');
 
