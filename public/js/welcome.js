@@ -1,1 +1,1 @@
-import{R as e,I as t}from"./app.js";const n=()=>e.createElement("div",null,e.createElement("h1",null,"Welcome to the Application"),e.createElement("p",null,"Please login to access the site."),e.createElement(t,{href:"/login"},"Login"));export{n as default};
+import{R as e}from"./app.js";const l=()=>e.createElement("div",null,e.createElement("h1",null,"CONVERTED ZILLA"),e.createElement("p",null,"Please login to access the service."),e.createElement("a",{href:"/login"},"Login"));export{l as default};
