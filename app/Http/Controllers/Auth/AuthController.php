@@ -23,7 +23,11 @@ class AuthController extends Controller
             ]))
         {
             // Авторизация прошла успешно
-            return redirect()->intended('/home');
+            return response()->json(
+                [
+                    'status' => 'ok'
+                ],200
+            );
 
         } else {
             // Неверные учетные данные

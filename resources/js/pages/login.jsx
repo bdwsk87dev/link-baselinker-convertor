@@ -15,6 +15,10 @@ const Login = () => {
             const response = await axios.post('/login', { email, password });
             setError(null);
 
+            if(response.data.status === 'ok'){
+                location.href = '/home';
+            }
+
             switch (response.data.error_code)
             {
                 case 'user_not_found':
@@ -32,10 +36,13 @@ const Login = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <Head>
-                    <style>{`
+        <div>
+            <Head>
+                <style>{`
+                        body{
+                            height: 100%;
+                            background: #161616;
+                        }
                         /* Основной контейнер формы */
                         .form-container {
                             max-width: 700px;
@@ -75,30 +82,33 @@ const Login = () => {
                         color:blue;
                         }
                     `}</style>
-                </Head>
-                <div className="form-container">
-                    <h1>Вхід</h1>
-                    {error && <div className="error-message">{error}</div>}
-                    <label>
-                        Логін ( email ) :
-                    </label>
-                    <input
-                        type="text"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <label>
-                        Пароль :
-                    </label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <button type="submit">Увійти</button>
+            </Head>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <div className="form-container">
+                        <h1>Вхід</h1>
+                        {error && <div className="error-message">{error}</div>}
+                        <label>
+                            Логін ( email ) :
+                        </label>
+                        <input
+                            type="text"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <label>
+                            Пароль :
+                        </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button type="submit">Увійти</button>
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     );
 };
 
