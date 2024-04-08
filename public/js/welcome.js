@@ -1,7 +1,8 @@
-import{R as e,H as r,I as o}from"./app.js";const t=()=>e.createElement("div",null,e.createElement(r,null,e.createElement("style",null,`
+import{R as e,H as r,I as n}from"./app.js";const a=()=>e.createElement("div",null,e.createElement(r,null,e.createElement("style",null,`
                         body{
                             height: 100%;
                             background: #161616;
+                            font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
                         }
                         /* Основной контейнер формы */
                         .form-container {
@@ -37,4 +38,4 @@ import{R as e,H as r,I as o}from"./app.js";const t=()=>e.createElement("div",nul
                         .form-container button:hover {
                             background-color: #0056b3;
                         }
-                    `)),e.createElement("div",null,e.createElement("div",{className:"form-container"},e.createElement("h1",null,"CONVERTEDZILLA"),e.createElement("p",null,"Please login to access the service."),e.createElement(o,{href:"/login"},"Login"))));export{t as default};
+                    `)),e.createElement("div",null,e.createElement("div",{className:"form-container"},e.createElement("h1",null,"CONVERTEDZILLA"),e.createElement("p",null,"Please login to access the service."),e.createElement(n,{href:"/login"},"Login"))));export{a as default};

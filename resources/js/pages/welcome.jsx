@@ -9,6 +9,7 @@ const Welcome = () => {
                         body{
                             height: 100%;
                             background: #161616;
+                            font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
                         }
                         /* Основной контейнер формы */
                         .form-container {

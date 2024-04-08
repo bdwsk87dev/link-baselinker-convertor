@@ -115,7 +115,7 @@ const List = ({xmlFiles}) => {
     }
 
     return (
-        <div className="p-5">
+        <div className="p-3">
             <Helmet>
                 <link
                     rel="stylesheet"
@@ -128,11 +128,20 @@ const List = ({xmlFiles}) => {
 
             <Head>
                 <style>{`
+
+                body{
+                 font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                }
+
+                h1{
+                    font-size:28px;
+                }
+
                 .custom-edit-button,
                 .custom-delete-button,
                 .link-button
                 {
-                    font-size:10px;
+                    font-size:12px;
                     padding: 3px 8px;
                     margin-right: 5px;
                     min - height: 38px;
@@ -170,7 +179,9 @@ const List = ({xmlFiles}) => {
                   border: 1px solid #ccc;
                   border-radius: 4px;
                   box-sizing: border-box;
-                  font-size: 14px;
+                  font-size: 12px;
+                  color:#0d6efd;
+                   font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
                 }
 
                 select:hover {
@@ -182,7 +193,7 @@ const List = ({xmlFiles}) => {
                 }
 
                 .modal h2 {
-                    font-size: 24px;
+                    font-size: 10px;
                     margin-bottom: 20px;
                 }
 
@@ -200,7 +211,7 @@ const List = ({xmlFiles}) => {
                     margin-bottom: 15px;
                     border: 1px solid #ccc;
                     border-radius: 4px;
-                    font-size: 16px;
+                    font-size: 12px;
                 }
 
                 .modal input[type="checkbox"] {
@@ -246,192 +257,223 @@ const List = ({xmlFiles}) => {
                     background-color: #292e69ee !important;
                 }
 
+                body{
+                    height: 100%;
+                    background: #bbbbbb;
+                }
+
+                .block
+                {
+                    background-color:#ffffff;
+                    padding:15px;
+                    border-radius:5px;
+                    margin-bottom:5px;
+                }
+
+                .file-table{
+                    font-size:12px;
+                    width: 100%;
+                    borderCollapse: collapse;
+                    margin: 0 auto;
+                }
+
+                .per-page{
+                    margin-left:15px;
+                }
+
+                .page-link{
+                    font-size:12px;
+                }
+
                  `}</style>
             </Head>
 
-            <h1>XML Files List</h1>
-            <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                <input type="text" placeholder="Search..." onKeyDown={search}/>
-                <select onChange={changePerPage} value={xmlFiles.per_page}>
-                    <option value="10">10 per page</option>
-                    <option value="25">25 per page</option>
-                    <option value="50">50 per page</option>
-                    <option value="100">100 per page</option>
-                    <option value="200">200 per page</option>
-                    {/* Добавили опцию для 40 элементов на странице */}
-                </select>
+            <div className='block'>
+                <h1>XML links links</h1>
+
+                <div style={{display: 'flex', justifyContent: 'flex-start'}}>
+                    <input type="text" placeholder="Search..." onKeyDown={search}/>
+                    <select className='per-page' onChange={changePerPage} value={xmlFiles.per_page}>
+                        <option value="10">10 per page</option>
+                        <option value="25">25 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="100">100 per page</option>
+                        <option value="200">200 per page</option>
+                        {/* Добавили опцию для 40 элементов на странице */}
+                    </select>
+                </div>
             </div>
 
-            <br/>
+            <div className='block'>
 
-            <table>
-                <tr>
-                    <td colSpan="6" style={{textAlign: 'center'}}>
-                        {xmlFiles.links.length > 0 && (
-                            <ul className="pagination">
-                                {xmlFiles.links.map((link, key) => (
-                                    <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
-                                        {link.label !== "..." ? (
-                                                <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])}
-                                                   className="page-link">
-                                                    {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
+                <br/>
+
+                <table className='file-table'>
+                    <thead>
+                    <tr>
+                        <td colSpan="6" style={{textAlign: 'center'}}>
+                            {xmlFiles.links.length > 0 && (
+                                <ul className="pagination">
+                                    {xmlFiles.links.map((link, key) => (
+                                        <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
+                                            {link.label !== "..." ? (
+                                                    <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])}
+                                                       className="page-link">
+                                                        {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
+                                                    </p>
+                                                ) :
+                                                <p className="page-link">
+                                                    ...
                                                 </p>
-                                            ) :
-                                            <p className="page-link">
-                                                ...
-                                            </p>
-                                        }
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </td>
-                </tr>
-            </table>
-
-
-            <table style={{fontSize:'10px', width: '100%', borderCollapse: 'collapse'}}>
-                <thead>
-                <tr>
-                    <th onClick={() => sortBy('id')} style={{
-                        cursor: 'pointer',
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>ID
-                    </th>
-                    <th onClick={() => sortBy('custom_name')} style={{
-                        cursor: 'pointer',
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>Custom name
-                    </th>
-                    <th onClick={() => sortBy('description')} style={{
-                        cursor: 'pointer',
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>Description
-                    </th>
-                    <th onClick={() => sortBy('uploadDateTime')} style={{
-                        cursor: 'pointer',
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>Upload datetime
-                    </th>
-
-                    <th onClick={() => sortBy('type')} style={{
-                        cursor: 'pointer',
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>Type
-                    </th>
-
-                    <th onClick={() => sortBy('source_file_link')} style={{
-                        cursor: 'pointer',
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>Original Link
-                    </th>
-
-                    <th style={{
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>Link
-                    </th>
-                    <th style={{
-                        padding: '8px',
-                        border: '1px solid #ddd',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                    }}>Edit
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                {xmlFiles.data.map((xmlFile) => (
-
-                    <tr key={xmlFile.id}>
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.id}</td>
-
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.custom_name}</td>
-
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.description}</td>
-
-                        <td style={{
-                            padding: '8px',
-                            border: '1px solid #ddd'
-                        }}>{format(new Date(xmlFile.uploadDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>
-
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.type}</td>
-
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.source_file_link}</td>
-
-                        <td style={{padding: '8px', border: '1px solid #ddd'}}><a
-                            className="btn btn-success link-button" href={`/api/show/${xmlFile.id}`}
-                            target="_blank">Link</a></td>
-
-                        <td style={{width:'170px', padding: '8px', border: '1px solid #ddd'}}>
-                            <button className="btn btn-primary edit-button custom-edit-button"
-                                    onClick={() => handleEdit(xmlFile.id)}>
-                                Translate me
-                            </button>
-                            <button className="btn btn-danger delete-button custom-delete-button"
-                                    onClick={() => handleDelete(xmlFile.id)}>
-                                Delete me
-                            </button>
+                                            }
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </td>
                     </tr>
-                ))}
-                </tbody>
-                <tfoot>
-                <tr>
-                    <td colSpan="6" style={{textAlign: 'center'}}>
-                        <br></br>
-                        {xmlFiles.links.length > 0 && (
-                            <ul className="pagination">
-                                {xmlFiles.links.map((link, key) => (
-                                    <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
-                                        {link.label !== "..." ? (
-                                                <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])}
-                                                   className="page-link">
-                                                    {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
-                                                </p>
-                                            ) :
-                                            <p className="page-link">
-                                                ...
-                                            </p>
-                                        }
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </td>
-                </tr>
-                </tfoot>
-            </table>
 
-            {isEditFormOpen && <EditForm productId={editingProductId} onClose={closeEditForm} />}
+                    <tr>
+                        <th onClick={() => sortBy('id')} style={{
+                            cursor: 'pointer',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>ID
+                        </th>
+                        <th onClick={() => sortBy('custom_name')} style={{
+                            cursor: 'pointer',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>Custom name
+                        </th>
+                        <th onClick={() => sortBy('description')} style={{
+                            cursor: 'pointer',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>Description
+                        </th>
+                        <th onClick={() => sortBy('uploadDateTime')} style={{
+                            cursor: 'pointer',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>Upload datetime
+                        </th>
+
+                        <th onClick={() => sortBy('type')} style={{
+                            cursor: 'pointer',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>Type
+                        </th>
+
+                        <th onClick={() => sortBy('source_file_link')} style={{
+                            cursor: 'pointer',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>Original Link
+                        </th>
+
+                        <th style={{
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>Link
+                        </th>
+                        <th style={{
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>Edit
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {xmlFiles.data.map((xmlFile) => (
+
+                        <tr key={xmlFile.id}>
+                            <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.id}</td>
+
+                            <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.custom_name}</td>
+
+                            <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.description}</td>
+
+                            <td style={{
+                                padding: '8px',
+                                border: '1px solid #ddd'
+                            }}>{format(new Date(xmlFile.uploadDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>
+
+                            <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.type}</td>
+
+                            <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.source_file_link}</td>
+
+                            <td style={{padding: '8px', border: '1px solid #ddd'}}><a
+                                className="btn btn-success link-button" href={`/api/show/${xmlFile.id}`}
+                                target="_blank">Link</a></td>
+
+                            <td style={{width: '220px', padding: '8px', border: '1px solid #ddd'}}>
+                                <button className="btn btn-primary edit-button custom-edit-button"
+                                        onClick={() => handleEdit(xmlFile.id)}>
+                                    Translate me
+                                </button>
+                                <button className="btn btn-danger delete-button custom-delete-button"
+                                        onClick={() => handleDelete(xmlFile.id)}>
+                                    Delete me
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colSpan="6" style={{textAlign: 'center'}}>
+                            <br></br>
+                            {xmlFiles.links.length > 0 && (
+                                <ul className="pagination">
+                                    {xmlFiles.links.map((link, key) => (
+                                        <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
+                                            {link.label !== "..." ? (
+                                                    <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])}
+                                                       className="page-link">
+                                                        {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
+                                                    </p>
+                                                ) :
+                                                <p className="page-link">
+                                                    ...
+                                                </p>
+                                            }
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            {isEditFormOpen && <EditForm productId={editingProductId} onClose={closeEditForm}/>}
 
         </div>
     );

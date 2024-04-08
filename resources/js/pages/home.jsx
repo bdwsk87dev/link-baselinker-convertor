@@ -102,6 +102,22 @@ const Home = ({ xmlFiles }) => {
                     p {
                         margin: 5px 0;
                     }
+
+                    body{
+                        height: 100%;
+                        background: #bbbbbb;
+                    }
+
+                    .home-container{
+                        background: #ffffff;
+                        height: auto;
+                        width: 480px;
+                        margin: 0 auto;
+                        padding: 15px;
+                        border-radius: 15px;
+                        font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                    }
+
                 `}</style>
             </Head>
             <div className="home-container">
