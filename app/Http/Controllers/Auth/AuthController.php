@@ -15,7 +15,6 @@ class AuthController extends Controller
     public function login(AuthRequest $request): JsonResponse | RedirectResponse
     {
         $request->validated();
-
         // Валидация прошла успешно благодаря AuthRequest
 
         if (Auth::attempt(['email' => $request->input('email'), 'password' => $request->input('password')]))
@@ -34,7 +33,7 @@ class AuthController extends Controller
         }
     }
 
-    public function register(Request $request)
+    public function register(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -51,7 +50,7 @@ class AuthController extends Controller
         return redirect()->intended('/home');
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();
