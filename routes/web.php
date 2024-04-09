@@ -30,6 +30,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list');
 
     Route::get('/get-completion-percentage', [XmlFileController::class, 'getCompletionPercentage']);
+
+    Route::get('/api/get-translated-products-count/{id}', [XmlFileController::class, 'getTranslatedCount']);
+
+    // Route::get('/fixer', [XmlFileController::class, 'fix']);
 });
 
 

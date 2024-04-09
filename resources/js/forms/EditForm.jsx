@@ -10,25 +10,42 @@ const EditForm = ({ productId, onClose }) => {
     });
 
     const [deepLUsage, setUsage ] = useState('');
-
-    const [completionPercentage, setCompletionPercentage] = useState(0);
-    const [translated, setTranslated] = useState(0);
-    const [translateError , setError] = useState('Внимание не тыкать несколько раз кнопку перевода!!! После зевершения перевода вместо этого текста появится ОК');
-
-    const fetchCompletionPercentage = async () => {
-        try {
-            const response = await axios.get('/get-completion-percentage');
-            const percentage = response.data.percentage;
-            console.log(percentage);
-            setCompletionPercentage(percentage);
-        } catch (error) {
-            console.error('Ошибка при получении процента выполнения:', error);
-        }
-    };
+    const [translateError , setError] = useState('');
+    const [translatedCount, setTranslatedCount] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
 
     useEffect(() => {
 
     }, []);
+
+
+    useEffect(() => {
+        // Функция, которая будет вызывать запрос к API и обновлять состояние
+        const fetchTranslatedCount = async () => {
+            try {
+
+                const translatedCountResponse = await axios.get('/api/get-translated-products-count/' + formData.productId);
+
+                console.log(translatedCountResponse);
+                const translatedCount = translatedCountResponse.data.translated;
+                const totalProducts = translatedCountResponse.data.totalProducts;
+                setTranslatedCount(translatedCount);
+                setTotalCount(totalProducts);
+            } catch (error) {
+                console.error('Ошибка при получении количества переведенных товаров:', error);
+            }
+        };
+
+        // Вызываем функцию fetchTranslatedCount сразу после монтирования компонента
+        fetchTranslatedCount();
+
+        // Устанавливаем интервал, который будет вызывать функцию fetchTranslatedCount каждую секунду
+        const intervalId = setInterval(fetchTranslatedCount, 1000);
+
+        // Очищаем интервал при размонтировании компонента, чтобы избежать утечек памяти
+        return () => clearInterval(intervalId);
+    }, []); // Пустой массив зависимостей гарантирует, что useEffect будет вызван только один раз после монтирования компонента
+
 
     const getDeepLUsage = async () => {
         try {
@@ -131,6 +148,10 @@ const EditForm = ({ productId, onClose }) => {
                         </label>
                     </div>
                     <button className="usageButton" type="button" onClick={handleGetDeepLUsage}>Get DeepL usage</button>
+
+                    <div>
+                        Перекладено {translatedCount} з {totalCount} товарів
+                    </div>
 
                     <div>
                         {translateError}

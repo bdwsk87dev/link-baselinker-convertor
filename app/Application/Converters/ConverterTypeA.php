@@ -121,7 +121,8 @@ class ConverterTypeA
             /** Vendor */
             if(isset($product->manufacturer_name))
             {
-                $offer->appendChild($yml->createElement('vendor', $product->manufacturer_name));
+                $manufacturerName = htmlspecialchars($product->manufacturer_name, ENT_XML1, 'UTF-8');
+                $offer->appendChild($yml->createElement('vendor', $manufacturerName));
             }
 
             /** Vendor Code */
@@ -155,8 +156,10 @@ class ConverterTypeA
             /** Дополнительные параметры */
             foreach ($product->attributes->attribute as $attribute) {
 
+                // Экранирование символов в значении перед добавлением в XML
+                $attributeValue = htmlspecialchars($attribute->attribute_value, ENT_XML1, 'UTF-8');
                 // Создаем элемент param
-                $paramElement = $yml->createElement('param', $attribute->attribute_value);
+                $paramElement = $yml->createElement('param', $attributeValue);
 
                 // Устанавливаем атрибуты name и value
                 $paramElement->setAttribute('name', $attribute->attribute_name);

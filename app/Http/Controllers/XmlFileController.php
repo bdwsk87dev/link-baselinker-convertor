@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Converters\ConverterTypeA;
 use App\Application\Converters\ConverterTypeB;
+use App\Application\Converters\ConverterTypeC;
 use App\Application\FileManager\LinkUploader;
 use App\Application\FileManager\Uploader;
 use App\Application\Translations\XmlTranslator;
@@ -13,21 +14,34 @@ use DeepL\DeepLException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use SimpleXMLElement;
 
 class XmlFileController extends Controller
 {
-    private ConverterTypeA|ConverterTypeB $globalConvertor;
+    private ConverterTypeA|ConverterTypeB|ConverterTypeC $globalConvertor;
 
     public function  __construct(
         private readonly Uploader $uploader,
         private readonly LinkUploader $linkUploader,
         private readonly ConverterTypeA $converterTypeA,
         private readonly ConverterTypeB $converterTypeB,
+        private readonly ConverterTypeC $converterTypeC,
         private readonly DeepLApplication $deepLApplication,
         private readonly XmlTranslator $xmlTranslator
     ){
 
     }
+
+    public function getTranslatedCount
+    (
+        $id
+    )
+    {
+        return $this->xmlTranslator->getTranslatedCount(
+            $id
+        );
+    }
+
 
     public function prepareConvertor($XmlType){
 
@@ -37,6 +51,9 @@ class XmlFileController extends Controller
                 break;
             case 'typeB':
                 $this->globalConvertor = $this->converterTypeB;
+                break;
+            case 'typeC':
+                $this->globalConvertor = $this->converterTypeC;
                 break;
         }
     }
@@ -196,3 +213,29 @@ class XmlFileController extends Controller
         );
     }
 }
+
+
+//public function fix()
+//{
+//    $xmlData = file_get_contents('../FIXER/Type_A_2_BL__Products__Nova_Post_XML_2024-04-08_21_24_produkt.xml');
+//    // Распарсить XML-данные
+//    $xml = new SimpleXMLElement($xmlData);
+//
+//    $ids = [];
+//    foreach ($xml->product as $product) {
+//        $ids[] = (string)$product->ean;
+//    }
+//
+//    $xmlData2 = file_get_contents('../FIXER/document to fix.xml');
+//    // Распарсить XML-данные
+//    $xmlNew = new SimpleXMLElement($xmlData2);
+//
+//    /** Перебор каждого товара в XML */
+//    $o = 0;
+//    foreach ($xmlNew->shop->offer as $offer) {
+//        $id = $ids[$o];
+//        $offer['id'] = $id;
+//        $o++;
+//    }
+//    $xmlNew->asXML('../FIXER/PPPOPA.xml');
+//}

@@ -118,6 +118,10 @@ const Home = ({ xmlFiles }) => {
                         font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
                     }
 
+                    .example{
+                        width:100%;
+                    }
+
                 `}</style>
             </Head>
             <div className="home-container">
@@ -152,7 +156,19 @@ const Home = ({ xmlFiles }) => {
                     >
                         <option value="typeA">Format A</option>
                         <option value="typeB">Format B</option>
+                        <option value="typeC">Format C</option>
                     </select>
+
+                    {/* Условие отображения изображения в зависимости от выбранного типа XML */}
+                    {xmlType === 'typeA' && (
+                        <img className='example' src="/img/TypeA.png" alt="Type A Image" />
+                    )}
+                    {xmlType === 'typeB' && (
+                        <img className='example' src="/img/TypeB.png" alt="Type B Image" />
+                    )}
+                    {xmlType === 'typeC' && (
+                        <img className='example' src="/img/TypeC.png" alt="Type C Image" />
+                    )}
 
                     <br/>
 
