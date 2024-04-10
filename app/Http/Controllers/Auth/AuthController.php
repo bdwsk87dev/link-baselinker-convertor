@@ -71,7 +71,7 @@ class AuthController extends Controller
             ]
         );
 
-        return redirect()->intended('/home');
+        return redirect()->intended('/upload');
     }
 
     public function logout(Request $request): RedirectResponse

@@ -19,6 +19,10 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('home');
     })->name('home');
 
+    Route::get('/upload', function () {
+        return Inertia::render('upload');
+    })->name('upload');
+
     Route::post('/api/upload', [XmlFileController::class, 'upload'])->name('xml.upload');
 
     Route::post('/delete/{id}', [XmlFileController::class, 'delete'])->name('xml.delete');

@@ -3,6 +3,7 @@ import {Head, InertiaLink} from '@inertiajs/inertia-react';
 import {format} from 'date-fns';
 import {Inertia} from '@inertiajs/inertia'
 import {Helmet} from 'react-helmet';
+import Menu from '../menu/menu';
 
 import EditForm from '../forms/EditForm'; // Import the EditForm component
 
@@ -116,25 +117,15 @@ const List = ({xmlFiles}) => {
 
     return (
         <div className="p-3">
-            <Helmet>
-                <link
-                    rel="stylesheet"
-                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-                    integrity="sha384-..."
-                    crossorigin="anonymous"
-                />
 
-            </Helmet>
 
             <Head>
                 <style>{`
 
                 body{
-                 font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
-                }
-
-                h1{
-                    font-size:28px;
+                 font-family: Verdana, sans-serif;
+                 height: 100%;
+                 background: #bbbbbb;
                 }
 
                 .custom-edit-button,
@@ -257,11 +248,6 @@ const List = ({xmlFiles}) => {
                     background-color: #292e69ee !important;
                 }
 
-                body{
-                    height: 100%;
-                    background: #bbbbbb;
-                }
-
                 .block
                 {
                     background-color:#ffffff;
@@ -288,9 +274,19 @@ const List = ({xmlFiles}) => {
                  `}</style>
             </Head>
 
-            <div className='block'>
-                <h1>XML links links</h1>
+            <Helmet>
+                <link
+                    rel="stylesheet"
+                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    integrity="sha384-..."
+                    crossorigin="anonymous"
+                />
 
+            </Helmet>
+
+            <Menu/>
+
+            <div className='block'>
                 <div style={{display: 'flex', justifyContent: 'flex-start'}}>
                     <input type="text" placeholder="Search..." onKeyDown={search}/>
                     <select className='per-page' onChange={changePerPage} value={xmlFiles.per_page}>

@@ -239,3 +239,21 @@ class XmlFileController extends Controller
 //    }
 //    $xmlNew->asXML('../FIXER/PPPOPA.xml');
 //}
+
+//public function fix()
+//{
+//    $xmlData2 = file_get_contents('../FIXER/Final_without_cdata.xml');
+//    // Распарсить XML-данные
+//    $xmlNew = new SimpleXMLElement($xmlData2);
+//
+//    /** Перебираем каждый товар в XML */
+//    foreach ($xmlNew->shop->offer as $offer) {
+//        // Создаем CDATA-секцию и вставляем в нее содержимое description_ua
+//        $cdata = $offer->description_ua;
+//        $descriptionWithCDATA = '<![CDATA[' . $cdata . ']]>';
+//        $offer->description_ua = $descriptionWithCDATA;
+//    }
+//
+//
+//    $xmlNew->asXML('../FIXER/Final_with_cdata.xml');
+//}
