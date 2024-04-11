@@ -212,6 +212,35 @@ class XmlFileController extends Controller
             $request->input('isTranslateDescription')
         );
     }
+
+
+    public function fix()
+    {
+        $xmlData2 = file_get_contents('../FIXER/A003.xml');
+        // Распарсить XML-данные
+        $xmlNew = new SimpleXMLElement($xmlData2);
+
+        /** Перебираем каждый товар в XML */
+        foreach ($xmlNew->shop->offer as $offer) {
+            // Получаем содержимое description_ua
+            $description = $offer->description_ua;
+
+            // Удаляем возможные дублирующие CDATA-секции
+            $description = preg_replace('/^<!\[CDATA\[\s*/', '<![CDATA[ ', $description);
+            $description = preg_replace('/\s*\]\]>$/s', ' ]]>', $description);
+
+            // Добавляем пробелы между CDATA-секцией и текстом
+            if (strpos($description, '<![CDATA[') !== false) {
+                $description = '<![CDATA[ ' . substr($description, 9);
+            }
+
+            // Заменяем содержимое description_ua на обновленное
+            $offer->description_ua = $description;
+        }
+
+        // Сохраняем измененный XML в новый файл
+        $xmlNew->asXML('../FIXER/A003_R.xml');
+    }
 }
 
 

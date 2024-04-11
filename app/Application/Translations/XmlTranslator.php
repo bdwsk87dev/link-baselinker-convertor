@@ -32,6 +32,9 @@ class XmlTranslator
 
         try {
 
+            $dom = new \DOMDocument();
+
+
             $translatedCount = 0;
 
             $xmlFile = XmlFile::where('id', $xmlID)->first();
@@ -59,7 +62,7 @@ class XmlTranslator
                 $description = (string)$offer->description;
 
                 // Проверить условия перевода
-                if ($isTranslateName === 'true' ) {
+                if ($isTranslateName === 'true' && $offer->name_ua == '') {
                     // Вызов метода перевода для имени товара
                     $translatedName = $this->deepL->translate(
                         [
@@ -70,11 +73,24 @@ class XmlTranslator
                         $apiKey
                     );
 
-                    // Замена переведенного имени в XML
-                    $offer->name_ua = $translatedName->text;
+                    unset($offer->name_ua);
+                    $newName = $offer->addChild('name_ua');
+                    $newNameNode = dom_import_simplexml($newName);
+                    $newNameNode->appendChild($newNameNode->ownerDocument->createCDATASection($translatedName->text));
+
+                    // FIX1
+                    // $cdataNameText = substr($offer->name_ua, 10, -3);
+                    // $offer->name_ua = $cdataNameText;
+
+                    // FIX 2
+                    //$nameText = (string) $offer->name_ua;
+                    //unset($offer->name_ua);
+                    //$newName = $offer->addChild('name_ua');
+                    //$newNameNode = dom_import_simplexml($newName);
+                    //$newNameNode->appendChild($newNameNode->ownerDocument->createCDATASection($nameText));
                 }
 
-                if ($isTranslateDescription === 'true') {
+                if ($isTranslateDescription === 'true' && $offer->description_ua == '') {
                     // Вызов метода перевода для описания товара
                     $translatedDescription = $this->deepL->translate(
                         [
@@ -84,8 +100,23 @@ class XmlTranslator
                         ],
                         $apiKey
                     );
-                    // Замена переведенного описания в XML
-                    $offer->description_ua = $translatedDescription->text;
+
+                    unset($offer->description_ua);
+                    $newDescription = $offer->addChild('description_ua');
+                    $newDescriptionNode = dom_import_simplexml($newDescription);
+                    $newDescriptionNode->appendChild($newDescriptionNode->ownerDocument->createCDATASection($translatedDescription->text));
+
+                    // FIX 1
+                    // $cdataDescriptionText = substr($offer->description_ua, 10, -3);
+                    // $offer->description_ua = $cdataDescriptionText;
+
+                    // FIX 2
+                    //$descriptionText = (string) $offer->description_ua;
+                    //unset($offer->description_ua);
+                    //$newDescription = $offer->addChild('description_ua');
+                    //$newDescriptionNode = dom_import_simplexml($newDescription);
+                    //$newDescriptionNode->appendChild($newDescriptionNode->ownerDocument->createCDATASection($descriptionText));
+
                 }
 
                 DB::table('translated_products')->updateOrInsert
@@ -115,10 +146,10 @@ class XmlTranslator
 
         } catch (DeepLException| Exception $e) {
             return
-            [
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ];
+                [
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ];
         }
     }
 

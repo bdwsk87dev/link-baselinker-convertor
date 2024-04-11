@@ -205,6 +205,8 @@ class ConverterTypeA
             }
         }
 
+        $result = substr($result, -15);
+
         return $result;
     }
 

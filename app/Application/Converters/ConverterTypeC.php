@@ -49,17 +49,27 @@ class ConverterTypeC
         $categoriesTag = $shop->appendChild($yml->createElement('categories'));
 
         $categories = [];
+        $categoriesCount = 0;
         foreach ($xml->entry as $product) {
-            if(isset($product->{'g:google_product_category'})){
+            $tagG = $product->children('g', true);
+            if (property_exists($tagG, 'google_product_category'))
+            {
+                $categoryName = $product->children('g', true)->google_product_category;
 
                 // Преобразуем буквы категории в числа
-                $categoryNumber = $this->lettersToNumbers($product->{'g:google_product_category'});
-                $categoryName = (string) $product->{'g:google_product_category'};
+                $categoryNumber = $this->lettersToNumbers($categoryName, $categoriesCount);
+                $categoryName = (string) $categoryName;
 
                 $categories[$categoryName]['id'] = $categoryNumber;
                 $categories[$categoryName]['name'] = $categoryName;
+                $categoriesCount++;
+            }
+            else{
+                $categories['no category']['id'] = '01010101111';
+                $categories['no category']['name'] = 'no category';
             }
         }
+
 
         foreach ($categories as $categoryName){
             $categoryElement = $yml->createElement('category');
@@ -70,24 +80,32 @@ class ConverterTypeC
 
         /** Обработка товаров */
         foreach ($xml->entry as $product) {
+            $tagG = $product->children('g', true);
+
             /** Создаём тег offer */
             $offer = $shop->appendChild($yml->createElement('offer'));
 
 
             /** ID товара */
-            if (isset($product->{'g:id'})) {
-                $offer->setAttribute('id', $product['id']);
+            $id = $product->children('g', true)->id;
+            if (isset($id)) {
+                $offer->setAttribute('id', $id);
             }
 
             /** Available true */
             $offer->setAttribute('available', 'true');
 
+
             /** Категория товара */
-            $categoryName = (string) $product->cat;
-            if (isset($product->cat)) {
+            if (property_exists($tagG, 'google_product_category')) {
+                $categoryName = (string) $product->children('g', true)->google_product_category;
+                if(isset($categories[$categoryName]))
                 {
                     $offer->appendChild($yml->createElement('categoryId', $categories[$categoryName]['id']));
                 }
+            }
+            else{
+                $offer->appendChild($yml->createElement('categoryId', '01010101111'));
             }
 
             /** Название товара */
@@ -106,13 +124,17 @@ class ConverterTypeC
             }
 
             /** Цена товара */
-            if (isset($product->{'g:price'})) {
-                $offer->appendChild($yml->createElement('price', $product->{'g:price'}));
+
+            $price = $product->children('g', true)->price;
+            if (isset($price)) {
+                $offer->appendChild($yml->createElement('price', $price));
             }
 
             /** Vendor */
-            if (isset($product->{'g:brand'})) {
-                $offer->appendChild($yml->createElement('vendor', $product->{'g:brand'}));
+            $brand = $product->children('g', true)->brand;
+            if (isset($brand)) {
+                $manufacturerName = htmlspecialchars($brand, ENT_XML1, 'UTF-8');
+                $offer->appendChild($yml->createElement('vendor', $manufacturerName));
             }
 
             /** Vendor Code */
@@ -147,14 +169,19 @@ class ConverterTypeC
                 }
             }
 
-            $paramElement = $yml->createElement('param', $product->{'g:gtin'});
-            $paramElement->setAttribute('name', 'gtin');
-            $offer->appendChild($paramElement);
+            $gtin = $product->children('g', true)->gtin;
+            if (isset($gtin)) {
+                $paramElement = $yml->createElement('param', $gtin);
+                $paramElement->setAttribute('name', 'gtin');
+                $offer->appendChild($paramElement);
+            }
 
-            $paramElement = $yml->createElement('param', $product->{'g:sale_price'});
-            $paramElement->setAttribute('name', 'Оптовая цена');
-            $offer->appendChild($paramElement);
-
+            $sale_price = $product->children('g', true)->sale_price;
+            if (isset($sale_price)) {
+                $paramElement = $yml->createElement('param', $sale_price);
+                $paramElement->setAttribute('name', 'Оптовая цена');
+                $offer->appendChild($paramElement);
+            }
 
         }
 
@@ -163,7 +190,7 @@ class ConverterTypeC
         return $uploadFilePath."_c_.xml";
     }
 
-    public function lettersToNumbers($input): string
+    public function lettersToNumbers($input, $catCount): string
     {
 
         $input = strtoupper($input);
@@ -193,6 +220,8 @@ class ConverterTypeC
             }
         }
 
-        return $result;
+        $result = substr($result, -8);
+
+        return $result.$catCount;
     }
 }
