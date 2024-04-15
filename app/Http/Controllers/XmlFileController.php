@@ -14,6 +14,7 @@ use DeepL\DeepLException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Inertia\ResponseFactory;
 use SimpleXMLElement;
 
 class XmlFileController extends Controller
@@ -119,27 +120,32 @@ class XmlFileController extends Controller
     public function index
     (
         Request $request
-    ): \Inertia\Response|\Inertia\ResponseFactory
+    ): \Inertia\Response | ResponseFactory
     {
-        $xmlFiles = XmlFile::query();
+        $query = XmlFile::query();
+
+        $query->with('translatedProducts');
 
         if ($request->has('sort_by') && !empty($request->get('sort_by')))
         {
             $sortColumn = $request->get('sort_by');
             $sortDirection = $request->get('order', 'asc');
-            $xmlFiles->orderBy($sortColumn, $sortDirection);
+            $query->orderBy($sortColumn, $sortDirection);
+        }
+        else {
+            $query->orderBy('id', 'desc');
         }
 
         if ($request->has('search'))
         {
             $search = $request->get('search');
-            $xmlFiles->where('custom_name', 'like', "%{$search}%");
-            $xmlFiles->orWhere('description', 'like', "%{$search}%");
-            $xmlFiles->orWhere('source_file_link', 'like', "%{$search}%");
+            $query->where('custom_name', 'like', "%{$search}%");
+            $query->orWhere('description', 'like', "%{$search}%");
+            $query->orWhere('source_file_link', 'like', "%{$search}%");
         }
 
         $perPage = $request->get('per_page', 30);
-        $xmlFiles = $xmlFiles->paginate($perPage);
+        $xmlFiles = $query->paginate($perPage);
 
         return inertia('list', compact('xmlFiles'));
     }
@@ -150,7 +156,8 @@ class XmlFileController extends Controller
     )
     {
         $xmlFile = XmlFile::findOrFail($id);
-        if (File::exists($xmlFile->converted_full_patch)) {
+        if (File::exists($xmlFile->converted_full_patch))
+        {
             $content = File::get($xmlFile->converted_full_patch);
             return Response::make($content, 200, [
                 'Content-Type' => 'application/xml',

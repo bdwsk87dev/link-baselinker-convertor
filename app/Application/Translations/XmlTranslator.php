@@ -11,7 +11,6 @@ use SimpleXMLElement;
 
 class XmlTranslator
 {
-
     public function  __construct(
         private readonly DeepLApplication $deepL,
     ){
@@ -56,13 +55,15 @@ class XmlTranslator
 
                 $translatedCount++;
 
-                // Получить данные товара
-                $id = $offer['id'];
+                // Get current product name
                 $name = (string)$offer->name;
+
+                // Get current product description
                 $description = (string)$offer->description;
 
-                // Проверить условия перевода
-                if ($isTranslateName === 'true' && $offer->name_ua == '') {
+                // Check translation conditions
+                if ($isTranslateName === 'true' && $offer->name_ua == '')
+                {
                     // Вызов метода перевода для имени товара
                     $translatedName = $this->deepL->translate(
                         [
@@ -74,50 +75,34 @@ class XmlTranslator
                     );
 
                     unset($offer->name_ua);
+
                     $newName = $offer->addChild('name_ua');
                     $newNameNode = dom_import_simplexml($newName);
-                    $newNameNode->appendChild($newNameNode->ownerDocument->createCDATASection($translatedName->text));
 
-                    // FIX1
-                    // $cdataNameText = substr($offer->name_ua, 10, -3);
-                    // $offer->name_ua = $cdataNameText;
-
-                    // FIX 2
-                    //$nameText = (string) $offer->name_ua;
-                    //unset($offer->name_ua);
-                    //$newName = $offer->addChild('name_ua');
-                    //$newNameNode = dom_import_simplexml($newName);
-                    //$newNameNode->appendChild($newNameNode->ownerDocument->createCDATASection($nameText));
-                }
-
-                if ($isTranslateDescription === 'true' && $offer->description_ua == '') {
-                    // Вызов метода перевода для описания товара
-                    $translatedDescription = $this->deepL->translate(
-                        [
-                            'text' => $description,
-                            null,
-                            'lang' => 'uk'
-                        ],
-                        $apiKey
+                    $newNameNode->appendChild(
+                        $newNameNode->ownerDocument->createCDATASection
+                        (
+                            $translatedName->text
+                        )
                     );
-
-                    unset($offer->description_ua);
-                    $newDescription = $offer->addChild('description_ua');
-                    $newDescriptionNode = dom_import_simplexml($newDescription);
-                    $newDescriptionNode->appendChild($newDescriptionNode->ownerDocument->createCDATASection($translatedDescription->text));
-
-                    // FIX 1
-                    // $cdataDescriptionText = substr($offer->description_ua, 10, -3);
-                    // $offer->description_ua = $cdataDescriptionText;
-
-                    // FIX 2
-                    //$descriptionText = (string) $offer->description_ua;
-                    //unset($offer->description_ua);
-                    //$newDescription = $offer->addChild('description_ua');
-                    //$newDescriptionNode = dom_import_simplexml($newDescription);
-                    //$newDescriptionNode->appendChild($newDescriptionNode->ownerDocument->createCDATASection($descriptionText));
-
                 }
+
+//                if ($isTranslateDescription === 'true' && $offer->description_ua == '') {
+//                    // Вызов метода перевода для описания товара
+//                    $translatedDescription = $this->deepL->translate(
+//                        [
+//                            'text' => $description,
+//                            null,
+//                            'lang' => 'uk'
+//                        ],
+//                        $apiKey
+//                    );
+//
+//                    unset($offer->description_ua);
+//                    $newDescription = $offer->addChild('description_ua');
+//                    $newDescriptionNode = dom_import_simplexml($newDescription);
+//                    $newDescriptionNode->appendChild($newDescriptionNode->ownerDocument->createCDATASection($translatedDescription->text));
+//                }
 
                 DB::table('translated_products')->updateOrInsert
                 (
@@ -153,11 +138,15 @@ class XmlTranslator
         }
     }
 
-    public function getTranslatedCount($id){
-        // Выполняем запрос к базе данных для получения количества переведенных товаров
-        $translatedData = DB::table('translated_products')->where('xmlid', $id)->first();
+    public function getTranslatedCount(
+        $id
+    ){
+        // Executing a database query to get the number of translated products
+        $translatedData = DB::table('translated_products')
+            ->where('xmlid', $id)
+            ->first();
 
-        // Если запись найдена, возвращаем количество переведенных товаров и общее количество товаров
+        // If the record is found, we return the number of translated items and the total number of items.
         if ($translatedData) {
             return [
                 'translated' => $translatedData->translatedCount,

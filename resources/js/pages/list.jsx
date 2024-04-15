@@ -7,6 +7,10 @@ import Menu from '../menu/menu';
 
 import EditForm from '../forms/EditForm'; // Import the EditForm component
 
+import { FaTrash } from 'react-icons/fa';
+import { FaLanguage } from 'react-icons/fa';
+import { FaLink } from 'react-icons/fa';
+
 const List = ({xmlFiles}) => {
 
     const [sortColumn, setSortColumn] = useState(null);
@@ -346,7 +350,7 @@ const List = ({xmlFiles}) => {
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Custom name
+                        }}>Назва
                         </th>
                         <th onClick={() => sortBy('description')} style={{
                             cursor: 'pointer',
@@ -355,7 +359,7 @@ const List = ({xmlFiles}) => {
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Description
+                        }}>Опис
                         </th>
                         <th onClick={() => sortBy('uploadDateTime')} style={{
                             cursor: 'pointer',
@@ -364,7 +368,7 @@ const List = ({xmlFiles}) => {
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Upload datetime
+                        }}>Час завантаження
                         </th>
 
                         <th onClick={() => sortBy('type')} style={{
@@ -374,7 +378,7 @@ const List = ({xmlFiles}) => {
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Type
+                        }}>Тип
                         </th>
 
                         <th onClick={() => sortBy('source_file_link')} style={{
@@ -384,7 +388,7 @@ const List = ({xmlFiles}) => {
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Original Link
+                        }}>Лінк на оригінал
                         </th>
 
                         <th style={{
@@ -393,15 +397,25 @@ const List = ({xmlFiles}) => {
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Link
+                        }}>Переклад
                         </th>
+
                         <th style={{
                             padding: '8px',
                             border: '1px solid #ddd',
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Edit
+                        }}>Лінк
+                        </th>
+                        <th style={{
+                            width: '100px',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f2f2f2',
+                            fontWeight: 'bold',
+                            textAlign: 'left'
+                        }}>Видалити
                         </th>
                     </tr>
                     </thead>
@@ -424,18 +438,78 @@ const List = ({xmlFiles}) => {
 
                             <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.source_file_link}</td>
 
-                            <td style={{padding: '8px', border: '1px solid #ddd'}}><a
-                                className="btn btn-success link-button" href={`/api/show/${xmlFile.id}`}
-                                target="_blank">Link</a></td>
+                            <td style={{
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                display: 'flex',
+                                justifyContent: 'space-between'
+                            }}>
+                                {xmlFile.translated_products && xmlFile.translated_products.translatedCount && xmlFile.translated_products.total ? (
+                                    <>
+                                        {xmlFile.translated_products.translatedCount !== xmlFile.translated_products.total ? (
+                                            <>
+                                                <div style={{
+                                                    padding: '8px',
+                                                    border: '1px solid #ddd',
+                                                    backgroundColor: '#f59595',
+                                                    borderRadius: '4px'
+                                                }}>
+                                                    Не
+                                                    закінчено {xmlFile.translated_products.translatedCount} / {xmlFile.translated_products.total}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div style={{
+                                                    padding: '8px',
+                                                    border: '1px solid rgb(221, 221, 221)',
+                                                    backgroundColor: '#5a8f28',
+                                                    borderRadius: '4px',
+                                                    color: '#ffffff'
+                                                }}>
+                                                    {xmlFile.translated_products.translatedCount} / {xmlFile.translated_products.total} Переклад
+                                                    готовий
+                                                </div>
+                                            </>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <div style={{
+                                            padding: '8px',
+                                            border: '1px solid #ddd',
+                                            backgroundColor: 'lightyellow',
+                                            borderRadius: '4px'
+                                        }}>
+                                            Дані відсутні
+                                        </div>
+                                    </>
+                                )}
 
-                            <td style={{width: '220px', padding: '8px', border: '1px solid #ddd'}}>
                                 <button className="btn btn-primary edit-button custom-edit-button"
                                         onClick={() => handleEdit(xmlFile.id)}>
-                                    Translate me
+                                    <FaLanguage style={{fontSize: '24px'}}/>
                                 </button>
+
+                            </td>
+
+                            <td style={{padding: '8px', border: '1px solid #ddd', textAlign: 'center'}}>
+                                <a style={{backgroundColor: 'green'}} target='_blank' className="btn btn-primary link-button custom-link-button"
+                                   href={`/api/show/${xmlFile.id}`}>
+                                    <FaLink style={{fontSize: '24px'}}/>
+                                </a>
+                            </td>
+
+                            <td style={{
+                                width: '100px',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                fontSize: '14px',
+                                textAlign: 'center'
+                            }}>
                                 <button className="btn btn-danger delete-button custom-delete-button"
                                         onClick={() => handleDelete(xmlFile.id)}>
-                                    Delete me
+                                    <FaTrash style={{fontSize: '24px'}}/>
                                 </button>
                             </td>
                         </tr>

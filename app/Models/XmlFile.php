@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class XmlFile extends Model
 {
+    // Assign table
     protected $table = 'xml_files';
 
     protected $fillable = [
@@ -18,4 +20,14 @@ class XmlFile extends Model
         'type'
     ];
 
+    public function translatedProducts
+    (
+    ): HasOne
+    {
+        return $this->hasOne(
+            TranslatedProduct::class,
+            'xmlid',
+            'id'
+        );
+    }
 }
