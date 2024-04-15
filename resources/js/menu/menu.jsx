@@ -20,19 +20,33 @@ const Menu = () => {
                             justify-content: flex-start;
                             align-items: center;
                             margin-bottom:5px;
+                            padding-left:15px;
                         }
 
                         .menu a {
-                          font-size: 14px;
-                          text-decoration: none;
-                          font-family: Verdana, sans-serif;
-                          color: black;
-                          padding: 15px;
-                          border-right: 1px solid #bbbbbd;
+                            font-size: 16px;
+                            text-decoration: none;
+                            font-family: Verdana, sans-serif;
+                            color: white;
+                            padding: 15px;
+                            padding-right: 70px;
+                            background:#16A177;
+                            margin-right: 1px;
+                            padding-left: 15px;
+                            border:1px solid #16A177;
                         }
 
                         .menu a:hover {
-                            color: blue;
+                            font-size: 16px;
+                            text-decoration: none;
+                            font-family: Verdana, sans-serif;
+                            color: #16A177;
+                            padding: 15px;
+                            padding-right: 70px;
+                            background:#ffffff;
+                            margin-right: 1px;
+                            padding-left: 15px;
+                            border:1px solid #16A177;
                         }
                     `}
                 </style>

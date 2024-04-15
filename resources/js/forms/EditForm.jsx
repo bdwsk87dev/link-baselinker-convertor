@@ -10,7 +10,7 @@ const EditForm = ({ productId, onClose }) => {
         isTranslateDescription: false,
     });
 
-    const [deepLUsage, setUsage ] = useState('');
+    const [deepLUsage, setUsage ] = useState('Щоб отримати статистику по поточному Api key натисніть кнопку.');
     const [translateError , setError] = useState('');
     const [translatedCount, setTranslatedCount] = useState(0);
     const [totalCount, setTotalCount] = useState(0);
@@ -106,14 +106,10 @@ const EditForm = ({ productId, onClose }) => {
     return (
         <div className="modal-background">
             <div className="modal">
-                <h2>Translate file</h2>
+                <div className='translate-modal-title'>Переклад файлу ID: {productId}</div>
+                <br/>
                 <div>
                 </div>
-                <div>
-                    DeeplUsage: {deepLUsage} {}
-                </div>
-
-                <p>ID: {productId}</p>
                 <form onSubmit={handleSubmit}>
                     <div>
                         <label>
@@ -126,40 +122,72 @@ const EditForm = ({ productId, onClose }) => {
                             />
                         </label>
                     </div>
-                    <div>
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="isTranslateName"
-                                checked={formData.isTranslateName}
-                                onChange={handleChange}
-                            />
-                            Translate all product names
-                        </label>
-                    </div>
-                    <div>
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="isTranslateDescription"
-                                checked={formData.isTranslateDescription}
-                                onChange={handleChange}
-                            />
-                            Translate all product descriptions
-                        </label>
-                    </div>
-                    <button className="usageButton" type="button" onClick={handleGetDeepLUsage}>Get DeepL usage</button>
+
+                    <button className="usageButton" type="button" onClick={handleGetDeepLUsage}>Отримати статистику
+                        DeepL API
+                    </button>
 
                     <div>
-                        Перекладено {translatedCount} з {totalCount} товарів
+                        <label>
+                            Deepl usage:
+                        </label>
+                        {deepLUsage}
                     </div>
+
+                    <br/>
 
                     <div>
                         {translateError}
                     </div>
 
-                    <button className="updateButton" type="submit">Translate</button>
-                    <button className="closeButton" onClick={onClose}>Exit</button>
+
+                    <label>
+                        Налаштування перекладу:
+                    </label>
+
+                    <div>
+                        <div className='elements-block'>
+                            <label style={{fontWeight: 'normal'}}>
+                                <input
+                                    type="checkbox"
+                                    name="isTranslateName"
+                                    checked={formData.isTranslateName}
+                                    onChange={handleChange}
+                                />
+                                &nbsp;&nbsp; Перекласти назву товарів
+                            </label>
+
+                        </div>
+                    </div>
+
+                    <div>
+                        <div className='elements-block'>
+                            <label style={{fontWeight: 'normal'}}>
+                                <input
+                                    type="checkbox"
+                                    name="isTranslateDescription"
+                                    checked={formData.isTranslateDescription}
+                                    onChange={handleChange}
+                                />
+                                &nbsp;&nbsp; Перекласти опис товарів
+                            </label>
+                        </div>
+                    </div>
+
+                    <br/>
+
+                    <label>
+                        Статус перекладу файлу:
+                    </label>
+
+                    <div className='translatedCount'>
+                        Перекладено {translatedCount} з {totalCount} товарів
+                    </div>
+
+                    <progress value={translatedCount} max={totalCount}></progress>
+
+                    <button className="updateButton" type="submit">Почати переклад</button>
+                    <button className="closeButton" onClick={onClose}>Закрити вікно</button>
                 </form>
             </div>
         </div>

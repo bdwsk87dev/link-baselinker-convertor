@@ -165,7 +165,7 @@ const List = ({xmlFiles}) => {
                   display: block; /* Отображаем окно */
                   width: 80%; /* Ширина окна */
                   height:60%;
-                  max-width: 400px; /* Максимальная ширина окна */
+                  max-width: 500px; /* Максимальная ширина окна */
                 }
 
                 input, select {
@@ -176,7 +176,9 @@ const List = ({xmlFiles}) => {
                   box-sizing: border-box;
                   font-size: 12px;
                   color:#0d6efd;
-                   font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                  font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                  border:1px solid #16A177;
+                  border-radius:0px !important;
                 }
 
                 select:hover {
@@ -227,6 +229,7 @@ const List = ({xmlFiles}) => {
                     background-color: #ccc;
                     color: white;
                     cursor: pointer;
+                    font-size:1rem;
                 }
 
                 .modal button:hover {
@@ -238,13 +241,13 @@ const List = ({xmlFiles}) => {
                 .modal .updateButton{
                     position: absolute;
                     bottom: 60px;
-                    width: 360px;
+                    width: 460px;
                     left: 20px;
                 }
                 .modal .closeButton{
                     position: absolute;
                     bottom: 0px;
-                    width: 360px;
+                    width: 460px;
                     left: 20px;
                 }
 
@@ -257,14 +260,18 @@ const List = ({xmlFiles}) => {
                     background-color:#ffffff;
                     padding:15px;
                     border-radius:5px;
-                    margin-bottom:5px;
+                    margin-bottom:3px;
                 }
 
                 .file-table{
-                    font-size:12px;
+                    font-size:14px;
                     width: 100%;
                     borderCollapse: collapse;
                     margin: 0 auto;
+                }
+
+                .per-page{
+                    font-size:14px;
                 }
 
                 .per-page{
@@ -275,6 +282,47 @@ const List = ({xmlFiles}) => {
                     font-size:12px;
                 }
 
+                .file-table tbody tr:nth-child(even) {
+                    background-color: #f9f9f9; /* Цвет фона для каждой второй строки */
+                }
+
+                 .file-table thead th {
+                    height:60px;
+                    font-size:16px;
+                }
+
+                .page-link{
+                    font-size:16px;
+                }
+
+                .active>.page-link, .page-link.active {
+                            background: #16A177;
+                }
+
+                .page-link{
+                    border:1px solid #16A177;
+                    border-radius:0px !important;
+                }
+
+                .translate-modal-title{
+                    font-size:1.5rem;
+                }
+
+                .elements-block{
+                    display:flex;
+                }
+
+                progress{
+                    width: 100%;
+                    vertical-align: baseline;
+                    height: 38px;
+                }
+
+                .translatedCount{
+                    float:left;
+                }
+
+                # Modal
                  `}</style>
             </Head>
 
@@ -290,7 +338,7 @@ const List = ({xmlFiles}) => {
 
             <Menu/>
 
-            <div className='block'>
+            <div className='block' style={{borderTopLeftRadius: '0px', borderTopRightRadius: '0px'}}>
                 <div style={{display: 'flex', justifyContent: 'flex-start'}}>
                     <input type="text" placeholder="Search..." onKeyDown={search}/>
                     <select className='per-page' onChange={changePerPage} value={xmlFiles.per_page}>
@@ -302,9 +350,6 @@ const List = ({xmlFiles}) => {
                         {/* Добавили опцию для 40 элементов на странице */}
                     </select>
                 </div>
-            </div>
-
-            <div className='block'>
 
                 <br/>
 
@@ -441,75 +486,85 @@ const List = ({xmlFiles}) => {
                             <td style={{
                                 padding: '8px',
                                 border: '1px solid #ddd',
-                                display: 'flex',
-                                justifyContent: 'space-between'
+                                width: '300px',
                             }}>
-                                {xmlFile.translated_products && xmlFile.translated_products.translatedCount && xmlFile.translated_products.total ? (
-                                    <>
-                                        {xmlFile.translated_products.translatedCount !== xmlFile.translated_products.total ? (
+                                <div style={{ display: 'flex', width: '300px',
+                                    justifyContent: 'space-between'}}>
+
+                                        {xmlFile.translated_products && xmlFile.translated_products.translatedCount && xmlFile.translated_products.total ? (
                                             <>
-                                                <div style={{
-                                                    padding: '8px',
-                                                    border: '1px solid #ddd',
-                                                    backgroundColor: '#f59595',
-                                                    borderRadius: '4px'
-                                                }}>
-                                                    Не
-                                                    закінчено {xmlFile.translated_products.translatedCount} / {xmlFile.translated_products.total}
-                                                </div>
+                                                {xmlFile.translated_products.translatedCount !== xmlFile.translated_products.total ? (
+                                                    <>
+                                                        <div style={{
+                                                            padding: '8px',
+                                                            border: '1px solid #ddd',
+                                                            backgroundColor: '#f59595',
+                                                            borderRadius: '4px'
+                                                        }}>
+                                                            Не
+                                                            закінчено {xmlFile.translated_products.translatedCount} / {xmlFile.translated_products.total}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div style={{
+                                                            padding: '8px',
+                                                            border: '1px solid rgb(221, 221, 221)',
+                                                            backgroundColor: '#5a8f28',
+                                                            borderRadius: '4px',
+                                                            color: '#ffffff'
+                                                        }}>
+                                                            {xmlFile.translated_products.translatedCount} / {xmlFile.translated_products.total} Переклад
+                                                            готовий
+                                                        </div>
+                                                    </>
+                                                )}
                                             </>
                                         ) : (
                                             <>
                                                 <div style={{
                                                     padding: '8px',
-                                                    border: '1px solid rgb(221, 221, 221)',
-                                                    backgroundColor: '#5a8f28',
-                                                    borderRadius: '4px',
-                                                    color: '#ffffff'
+                                                    border: '1px solid #ddd',
+                                                    backgroundColor: 'lightyellow',
+                                                    borderRadius: '4px'
                                                 }}>
-                                                    {xmlFile.translated_products.translatedCount} / {xmlFile.translated_products.total} Переклад
-                                                    готовий
+                                                    Дані відсутні
                                                 </div>
                                             </>
                                         )}
-                                    </>
-                                ) : (
-                                    <>
-                                        <div style={{
-                                            padding: '8px',
-                                            border: '1px solid #ddd',
-                                            backgroundColor: 'lightyellow',
-                                            borderRadius: '4px'
-                                        }}>
-                                            Дані відсутні
-                                        </div>
-                                    </>
-                                )}
 
-                                <button className="btn btn-primary edit-button custom-edit-button"
-                                        onClick={() => handleEdit(xmlFile.id)}>
-                                    <FaLanguage style={{fontSize: '24px'}}/>
-                                </button>
+
+
+                                        <button className="btn btn-primary edit-button custom-edit-button"
+                                                onClick={() => handleEdit(xmlFile.id)}>
+                                            <FaLanguage style={{fontSize: '24px'}}/>
+                                        </button>
+
+                                        </div>
+
+
+
+
 
                             </td>
 
-                            <td style={{padding: '8px', border: '1px solid #ddd', textAlign: 'center'}}>
-                                <a style={{backgroundColor: 'green'}} target='_blank' className="btn btn-primary link-button custom-link-button"
+                            <td style={{border: '1px solid #ddd', textAlign: 'center', width: '100px'}}>
+                                <a style={{padding: '8px', backgroundColor: 'green'}} target='_blank' className="btn btn-primary link-button custom-link-button"
                                    href={`/api/show/${xmlFile.id}`}>
-                                    <FaLink style={{fontSize: '24px'}}/>
+                                    <FaLink style={{fontSize: '18px'}}/>
                                 </a>
                             </td>
 
                             <td style={{
                                 width: '100px',
-                                padding: '8px',
-                                border: '1px solid #ddd',
                                 fontSize: '14px',
-                                textAlign: 'center'
+                                textAlign: 'center',
+                                border: '1px solid #ddd',
+
                             }}>
-                                <button className="btn btn-danger delete-button custom-delete-button"
+                                <button style={{padding: '9px'}} className="btn btn-danger delete-button custom-delete-button"
                                         onClick={() => handleDelete(xmlFile.id)}>
-                                    <FaTrash style={{fontSize: '24px'}}/>
+                                    <FaTrash style={{fontSize: '18px'}}/>
                                 </button>
                             </td>
                         </tr>
