@@ -58,14 +58,6 @@ const Upload = ({ xmlFiles }) => {
                         border-radius: 5px;
                     }
 
-                    input[type="text"] {
-                        padding: 10px;
-                        margin: 5px 0;
-                        border: 1px solid #ccc;
-                        border-radius: 5px;
-                        width: 100%;
-                        box-sizing: border-box;
-                    }
 
                     select {
                         padding: 10px;
@@ -115,17 +107,30 @@ const Upload = ({ xmlFiles }) => {
                         justify-content: flex-end; /* Выравнивание изображения по правому краю */
                     }
 
+                    input, select {
+                        padding: 8px;
+                        margin: 5px 0;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                        box-sizing: border-box;
+                        font-size: 12px;
+                        color:#0d6efd;
+                        font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                        border:1px solid #16A177;
+                        border-radius:0px !important;
+                        width:100%;
+                    }
+
                 `}</style>
             </Head>
 
             <Menu/>
 
-            <div className='block' style={{display: 'flex', justifyContent: 'space-between'}}>
-
+            <div className='block' style={{display: 'flex', justifyContent: 'space-between', borderTopLeftRadius: '0px', borderTopRightRadius: '0px'}}>
 
                 <form className="upload-form" encType="multipart/form-data" onSubmit={handleSubmit}>
 
-                    <span>Xml upload type</span>
+                    <span>Як завантажувати файл</span>
                     <select
                         value={uploadType}
                         onChange={(e) => setUploadType(e.target.value)}
@@ -136,15 +141,16 @@ const Upload = ({ xmlFiles }) => {
 
                     <br/>
 
-                    <span>Original Xml type format</span>
+                    <span>Тип оригіналу</span>
                     <select
                         className="home-upload-xmltype-select"
                         value={xmlType}
                         onChange={(e) => setXmlType(e.target.value)}
                     >
                         <option value="typeA">Format A [ BL__Produkty ] [ Поляки ]</option>
-                        <option value="typeB">Format B [ https://api.takedrop.pl/merchant/export ] </option>
+                        <option value="typeB">Format B [ https://api.takedrop.pl/merchant/export ]</option>
                         <option value="typeC">Format C [ integration-google_product_search ]</option>
+                        <option value="typeD">USMALL формат CSV від Сергія</option>
                     </select>
 
                     <br/>
@@ -162,7 +168,7 @@ const Upload = ({ xmlFiles }) => {
 
                     <br/>
 
-                    <label>Currency</label>
+                    <label>Валюта</label>
                     <input
                         type="text"
                         value={currency}
@@ -172,7 +178,7 @@ const Upload = ({ xmlFiles }) => {
 
                     <br/>
 
-                    <label>Custom name ( for administration )</label>
+                    <label>Назва ( лише для таблиці сконвертованих лінків )</label>
                     <input
                         type="text"
                         value={customName}
@@ -182,7 +188,7 @@ const Upload = ({ xmlFiles }) => {
 
                     <br/>
 
-                    <label>Description ( for administration )</label>
+                    <label>Опис ( лише для таблиці сконвертованих лінків )</label>
                     <input
                         type="text"
                         value={description}

@@ -2,21 +2,35 @@
 
 namespace App\Application\FileManager;
 
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
 class Uploader
 {
-    public function __construct(){
+
+    public function __construct(
+        private readonly FileUploader $uploader,
+        private readonly LinkUploader $linkUploader,
+    )
+    {
+
     }
 
-    public function upload(
-        $file
+    public function upload
+    (
+        String $uploadType,
+        Request $request
     ): string
     {
-        $fileName = time().'_'.
-            $file->getClientOriginalName();
 
-        $file->storeAs('public/uploads/xml/', "F_".$fileName);
-        return Storage::path('public/uploads/xml/'."F_".$fileName);
+        return match ($uploadType) {
+            'file' => $this->uploader->upload(
+                $request->file('file')
+            ),
+            'link' => $this->linkUploader->upload(
+                $request->input('remoteFileLink')
+            ),
+            default => false,
+        };
     }
 }

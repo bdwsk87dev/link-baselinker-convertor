@@ -37,7 +37,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/api/get-translated-products-count/{id}', [XmlFileController::class, 'getTranslatedCount']);
 
-    Route::get('/fixer', [XmlFileController::class, 'fix']);
+    Route::get('/fixer', [XmlFileController::class, 'fixer']);
+
+    Route::post('/api/modification/', [XmlFileController::class, 'modify']);
 });
 
 

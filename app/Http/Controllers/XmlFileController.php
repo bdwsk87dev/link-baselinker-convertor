@@ -5,30 +5,34 @@ namespace App\Http\Controllers;
 use App\Application\Converters\ConverterTypeA;
 use App\Application\Converters\ConverterTypeB;
 use App\Application\Converters\ConverterTypeC;
+use App\Application\Converters\ConverterTypeD;
 use App\Application\FileManager\LinkUploader;
+use App\Application\FileManager\FileUploader;
 use App\Application\FileManager\Uploader;
 use App\Application\Translations\XmlTranslator;
 use App\Models\XmlFile;
 use App\Application\Translations\DeepLApplication;
 use DeepL\DeepLException;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Inertia\ResponseFactory;
 use SimpleXMLElement;
+use function PHPUnit\Framework\never;
 
 class XmlFileController extends Controller
 {
-    private ConverterTypeA|ConverterTypeB|ConverterTypeC $globalConvertor;
+    private ConverterTypeA|ConverterTypeB|ConverterTypeC|ConverterTypeD $globalConvertor;
 
     public function  __construct(
         private readonly Uploader $uploader,
-        private readonly LinkUploader $linkUploader,
-        private readonly ConverterTypeA $converterTypeA,
-        private readonly ConverterTypeB $converterTypeB,
-        private readonly ConverterTypeC $converterTypeC,
+        private readonly ConverterTypeA   $converterTypeA,
+        private readonly ConverterTypeB   $converterTypeB,
+        private readonly ConverterTypeC   $converterTypeC,
+        private readonly ConverterTypeD   $converterTypeD,
         private readonly DeepLApplication $deepLApplication,
-        private readonly XmlTranslator $xmlTranslator
+        private readonly XmlTranslator    $xmlTranslator
     ){
 
     }
@@ -36,16 +40,19 @@ class XmlFileController extends Controller
     public function getTranslatedCount
     (
         $id
-    )
+    ): array
     {
-        return $this->xmlTranslator->getTranslatedCount(
+        return $this->xmlTranslator->getTranslatedCount
+        (
             $id
         );
     }
 
-
-    public function prepareConvertor($XmlType){
-
+    public function prepareConvertor
+    (
+        $XmlType
+    ): void
+    {
         switch ($XmlType) {
             case 'typeA':
                 $this->globalConvertor = $this->converterTypeA;
@@ -56,43 +63,27 @@ class XmlFileController extends Controller
             case 'typeC':
                 $this->globalConvertor = $this->converterTypeC;
                 break;
+            case 'typeD':
+                $this->globalConvertor = $this->converterTypeD;
+                break;
         }
     }
 
     public function upload(Request $request)
     {
 
-        /* Cheking xml type */
+        /* Checking xml type */
         $XmlType = $request->input('xmlType');
         $this->prepareConvertor($XmlType);
 
-        /* Cheking upload type */
+        /* Checking upload type */
         $uploadType = $request->input('uploadType');
 
-        switch ($uploadType) {
-
-            case 'file':
-
-                // Загружаем оригинальный файл на сервер
-                $uploadFilePath = $this->uploader->upload(
-                    $request->file('file')
-                );
-
-                break;
-
-            case 'link':
-
-                // Загружаем оригинальный файл на сервер
-                $uploadFilePath = $this->linkUploader->upload(
-                    $request->input('remoteFileLink')
-                );
-
-                break;
-
-            default:
-                return false;
-                break;
-        }
+        $uploadFilePath = $this->uploader->upload
+        (
+            $uploadType,
+            $request
+        );
 
         // Конвертируем
         $convertedFilePatch = $this->globalConvertor->convert
@@ -103,17 +94,23 @@ class XmlFileController extends Controller
             ]
         );
 
-        XmlFile::create([
-            'custom_name' => $request->input('customName'),
-            'description' => $request->input('description'),
-            'upload_full_patch' => $uploadFilePath,
-            'converted_full_patch' => $convertedFilePatch,
-            'source_file_link' => $request->input('remoteFileLink') ?: '',
-            'uploadDateTime' => now(),
-            'type' => $uploadType,
-        ]);
+        XmlFile::create
+        (
+            [
+                'custom_name' => $request->input('customName'),
+                'description' => $request->input('description'),
+                'upload_full_patch' => $uploadFilePath,
+                'converted_full_patch' => $convertedFilePatch,
+                'source_file_link' => $request->input('remoteFileLink') ?: '',
+                'uploadDateTime' => now(),
+                'type' => $uploadType,
+            ]
+        );
 
-        echo "Готово!";
+        return
+            [
+                'status' => 'ok'
+            ];
     }
 
 
@@ -248,6 +245,194 @@ class XmlFileController extends Controller
         // Сохраняем измененный XML в новый файл
         $xmlNew->asXML('../FIXER/A003_R.xml');
     }
+
+    /**
+     * @throws Exception
+     */
+    public function modify
+    (
+        Request $request
+    ): array
+    {
+        // Get xml id
+        $xmlId = $request->input('productId');
+
+        // Get percent
+        $percent = $request->input('newPrice');
+        $isChangePrice = $request->input('isChangePrice');
+
+        // Descriptions
+        $isChangeDescription = $request->input('isChangeDescription');
+        $isChangeDescriptionUA = $request->input('isChangeDescriptionUA');
+
+        $newDescription = $request->input('newDescription');
+        $newDescriptionUA = $request->input('newDescriptionUA');
+
+        if ( XmlFile::where( 'id', $xmlId )->exists() )
+        {
+            $xmlFile = XmlFile::where( 'id', $xmlId )->first();
+            $xmlData = file_get_contents( $xmlFile->converted_full_patch );
+        }
+        else {
+            return
+                [
+                    'status' => 'fail',
+                    'message' => 'xml by id not found'
+                ];
+        }
+
+        $currentTime = date('md_His');
+        $backupFileName = $xmlFile->converted_full_patch . '_old_' . $currentTime . '.xml';
+
+        // Write duplicate xml file
+        file_put_contents(
+            $backupFileName,
+            $xmlData
+        );
+
+        $xmlNew = new SimpleXMLElement($xmlData);
+
+        foreach ($xmlNew->shop->offer as $offer)
+        {
+            if ( $isChangePrice )
+            {
+                /*
+                * Find price value before space ( currency get from other offer tag )
+                * Цена может быть 33.23 PLN или 23.12
+                */
+
+                // Price string from xml offer
+                $price = (string) $offer->price;
+
+                // Find price value before space
+                preg_match('/^([\d.,]+)\s/', $price, $valueMatches);
+
+                // If space exist
+                if ( isset ( $valueMatches[1] ))
+                {
+                    $value = floatval( $valueMatches[1] );
+                }
+                else
+                {
+                    $value = $price;
+                }
+
+                // Change price value in offer
+                $offer->price = round($value + (($value / 100) * $percent),2) .' '.$offer->currencyId;
+
+            }
+
+            if ( $isChangeDescription === 'true' )
+            {
+                // Отримати поточний текст у CDATA-блоку
+                $existingDescription = $offer->description;
+
+                // Перевірити, чи існує CDATA-блок
+                if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>'))
+                {
+                    // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
+                    $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
+                    $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
+                }
+
+                // Update description
+                $newDescriptionText = $newDescription . ' ' . PHP_EOL . $existingDescription;
+
+                unset(
+                    $offer->description
+                );
+
+                $newName = $offer->addChild('description');
+                $newCData = dom_import_simplexml($newName);
+                $newCData->appendChild
+                (
+                    $newCData->ownerDocument->createCDATASection
+                    (
+                        $newDescriptionText
+                    )
+                );
+
+            }
+
+            if ( $isChangeDescriptionUA === 'true' )
+            {
+
+                // Отримати поточний текст у CDATA-блоку
+                $existingDescriptionUA = $offer->description_ua;
+
+                // Перевірити, чи існує CDATA-блок
+                if (str_contains($existingDescriptionUA, '<![CDATA[') && str_contains($existingDescriptionUA, ']]>')) {
+                    // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
+                    $existingDescriptionUA = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescriptionUA);
+                    $existingDescriptionUA = preg_replace('/\s*\]\]>/', '', $existingDescriptionUA);
+                }
+
+                // Створити новий текст з комбінацією нового та поточного
+                $newText = $newDescriptionUA . ' ' . PHP_EOL . $existingDescriptionUA;
+
+                unset(
+                    $offer->description_ua
+                );
+
+                $newName = $offer->addChild('description_ua');
+                $newCData = dom_import_simplexml($newName);
+                $newCData->appendChild
+                (
+                    $newCData->ownerDocument->createCDATASection
+                    (
+                        $newText
+                    )
+                );
+            }
+        }
+
+        $xmlNew->asXML($xmlFile->converted_full_patch);
+
+        return
+            [
+                'status' => 'ok'
+            ];
+    }
+
+    public function fixer()
+    {
+        $xmlData2 = file_get_contents('../FIXER/50.xml');
+        // Распарсить XML-данные
+        $xmlNew = new SimpleXMLElement($xmlData2);
+
+        /** Перебор каждого товара в XML */
+        foreach ($xmlNew->shop->offer as $offer) {
+            $descriptionToRemove = '&lt;strong&gt;Доставка з магазину Європи.&lt;/strong&gt;
+&lt;div&gt;Вартість доставки від 190 грн в Україну залежно від розміру та ваги товару.&lt;/div&gt;
+&lt;div&gt;Термін доставки: 7-10 днів.&lt;/div&gt;';
+
+            $offer->description = str_replace($descriptionToRemove, '', $offer->description);
+            $offer->description_ua = str_replace($descriptionToRemove, '', $offer->description_ua);
+
+
+            $price = (string) $offer->price;
+
+            // Find price value before space
+            preg_match('/^([\d.,]+)\s/', $price, $valueMatches);
+
+            // If space exist
+            if ( isset ( $valueMatches[1] ))
+            {
+                $value = floatval( $valueMatches[1] );
+            }
+            else
+            {
+                $value = $price;
+            }
+
+            // Change price value in offer
+            $offer->price = round($value - (($value / 100) * 10),2) .' '.$offer->currencyId;
+
+        }
+        $xmlNew->asXML('../FIXER/50POPA.xml');
+        echo '1';
+    }
+
 }
 
 
