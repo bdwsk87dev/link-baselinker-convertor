@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\ImageProxyController;
 use App\Http\Controllers\XmlFileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -10,6 +11,8 @@ ini_set('upload_max_filesize', '100M');
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('welcome');
+
+Route::get('/proxy/image', [ImageProxyController::class, 'getImage']);
 
 Route::middleware(['auth'])->group(function () {
 
@@ -40,10 +43,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/fixer', [XmlFileController::class, 'fixer']);
 
     Route::post('/api/modification/', [XmlFileController::class, 'modify']);
+
 });
 
 
 Route::middleware(['guest'])->group(function () {
+
+
 
     Route::get('/login', function () {
         return Inertia::render('login');

@@ -6,6 +6,7 @@ use App\Application\Converters\ConverterTypeA;
 use App\Application\Converters\ConverterTypeB;
 use App\Application\Converters\ConverterTypeC;
 use App\Application\Converters\ConverterTypeD;
+use App\Application\Converters\ConverterTypeE;
 use App\Application\FileManager\LinkUploader;
 use App\Application\FileManager\FileUploader;
 use App\Application\FileManager\Uploader;
@@ -23,7 +24,7 @@ use function PHPUnit\Framework\never;
 
 class XmlFileController extends Controller
 {
-    private ConverterTypeA|ConverterTypeB|ConverterTypeC|ConverterTypeD $globalConvertor;
+    private ConverterTypeA|ConverterTypeB|ConverterTypeC|ConverterTypeD|ConverterTypeE $globalConvertor;
 
     public function  __construct(
         private readonly Uploader $uploader,
@@ -31,6 +32,7 @@ class XmlFileController extends Controller
         private readonly ConverterTypeB   $converterTypeB,
         private readonly ConverterTypeC   $converterTypeC,
         private readonly ConverterTypeD   $converterTypeD,
+        private readonly ConverterTypeE   $converterTypeE,
         private readonly DeepLApplication $deepLApplication,
         private readonly XmlTranslator    $xmlTranslator
     ){
@@ -65,6 +67,9 @@ class XmlFileController extends Controller
                 break;
             case 'typeD':
                 $this->globalConvertor = $this->converterTypeD;
+                break;
+            case 'typeE':
+                $this->globalConvertor = $this->converterTypeE;
                 break;
         }
     }
@@ -265,8 +270,8 @@ class XmlFileController extends Controller
         $isChangeDescription = $request->input('isChangeDescription');
         $isChangeDescriptionUA = $request->input('isChangeDescriptionUA');
 
-        $newDescription = $request->input('newDescription');
-        $newDescriptionUA = $request->input('newDescriptionUA');
+        $newDescription = str_replace("\n", "<br>", $request->input('newDescription'));
+        $newDescriptionUA = str_replace("\n", "<br>", $request->input('newDescriptionUA'));
 
         if ( XmlFile::where( 'id', $xmlId )->exists() )
         {
@@ -394,44 +399,44 @@ class XmlFileController extends Controller
             ];
     }
 
-    public function fixer()
-    {
-        $xmlData2 = file_get_contents('../FIXER/50.xml');
-        // Распарсить XML-данные
-        $xmlNew = new SimpleXMLElement($xmlData2);
-
-        /** Перебор каждого товара в XML */
-        foreach ($xmlNew->shop->offer as $offer) {
-            $descriptionToRemove = '&lt;strong&gt;Доставка з магазину Європи.&lt;/strong&gt;
-&lt;div&gt;Вартість доставки від 190 грн в Україну залежно від розміру та ваги товару.&lt;/div&gt;
-&lt;div&gt;Термін доставки: 7-10 днів.&lt;/div&gt;';
-
-            $offer->description = str_replace($descriptionToRemove, '', $offer->description);
-            $offer->description_ua = str_replace($descriptionToRemove, '', $offer->description_ua);
-
-
-            $price = (string) $offer->price;
-
-            // Find price value before space
-            preg_match('/^([\d.,]+)\s/', $price, $valueMatches);
-
-            // If space exist
-            if ( isset ( $valueMatches[1] ))
-            {
-                $value = floatval( $valueMatches[1] );
-            }
-            else
-            {
-                $value = $price;
-            }
-
-            // Change price value in offer
-            $offer->price = round($value - (($value / 100) * 10),2) .' '.$offer->currencyId;
-
-        }
-        $xmlNew->asXML('../FIXER/50POPA.xml');
-        echo '1';
-    }
+//    public function fixer()
+//    {
+//        $xmlData2 = file_get_contents('../FIXER/50.xml');
+//        // Распарсить XML-данные
+//        $xmlNew = new SimpleXMLElement($xmlData2);
+//
+//        /** Перебор каждого товара в XML */
+//        foreach ($xmlNew->shop->offer as $offer) {
+//            $descriptionToRemove = '&lt;strong&gt;Доставка з магазину Європи.&lt;/strong&gt;
+//&lt;div&gt;Вартість доставки від 190 грн в Україну залежно від розміру та ваги товару.&lt;/div&gt;
+//&lt;div&gt;Термін доставки: 7-10 днів.&lt;/div&gt;';
+//
+//            $offer->description = str_replace($descriptionToRemove, '', $offer->description);
+//            $offer->description_ua = str_replace($descriptionToRemove, '', $offer->description_ua);
+//
+//
+//            $price = (string) $offer->price;
+//
+//            // Find price value before space
+//            preg_match('/^([\d.,]+)\s/', $price, $valueMatches);
+//
+//            // If space exist
+//            if ( isset ( $valueMatches[1] ))
+//            {
+//                $value = floatval( $valueMatches[1] );
+//            }
+//            else
+//            {
+//                $value = $price;
+//            }
+//
+//            // Change price value in offer
+//            $offer->price = round($value - (($value / 100) * 10),2) .' '.$offer->currencyId;
+//
+//        }
+//        $xmlNew->asXML('../FIXER/50POPA.xml');
+//        echo '1';
+//    }
 
 }
 

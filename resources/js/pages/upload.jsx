@@ -11,6 +11,7 @@ const Upload = ({ xmlFiles }) => {
     const [xmlType, setXmlType] = useState('typeA');
     const [remoteFileLink, setRemoteFileLink] = useState('');
     const [currency, setCurrency] = useState('PLN');
+    const [isUploadImages, setIsUploadImages] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -120,6 +121,10 @@ const Upload = ({ xmlFiles }) => {
                         border-radius:0px !important;
                         width:100%;
                     }
+                    .isUploadImages
+                    {
+                        width:10px;
+                    }
 
                 `}</style>
             </Head>
@@ -151,6 +156,7 @@ const Upload = ({ xmlFiles }) => {
                         <option value="typeB">Format B [ https://api.takedrop.pl/merchant/export ]</option>
                         <option value="typeC">Format C [ integration-google_product_search ]</option>
                         <option value="typeD">USMALL формат CSV від Сергія</option>
+                        <option value="typeE">Формат от Андрея 24 04</option>
                     </select>
 
                     <br/>
@@ -197,6 +203,17 @@ const Upload = ({ xmlFiles }) => {
                     />
 
                     <br/>
+
+                    <label>Завантажувати зображення на сервер ( Тільки для Олександра опція )</label>
+                    <input className="isUploadImages"
+                        type="checkbox"
+                        checked={isUploadImages}
+                        onChange={(e) => setIsUploadImages(e.target.checked)}
+                        placeholder="Descripton"
+                    />
+
+                    <br/>
+
 
                     <button type="submit">Upload</button>
 

@@ -164,13 +164,19 @@ class ConverterTypeD
             /* Разделитель , или ; между pictures */
             if(isset($data[10]))
             {
+                $currentUrl = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+                $currentUrl .= $_SERVER['HTTP_HOST'];
+
                 $images = explode("; ", $data[10]);
 
                 foreach ($images as $image) {
-                    // Создать тег <picture>
+
+                    $proxyUrl = $currentUrl . '/proxy/image?url=' . urlencode($image);
+
+                    // Создаем тег <picture>
                     $pictureNode = $offer->appendChild($yml->createElement('picture'));
-                    // Добавить содержимое изображения в CDATA-секцию
-                    $pictureNode->appendChild($yml->createCDATASection($image));
+                    // Добавляем содержимое изображения в CDATA-секцию с ссылкой на прокси
+                    $pictureNode->appendChild($yml->createCDATASection($proxyUrl));;
                 }
             }
 
@@ -181,9 +187,12 @@ class ConverterTypeD
                 $offer->appendChild($paramElement);
             }
 
-            if (isset($data[15]) && !empty($data[15])) {
+            if (!empty($data[4])) {
                 // Преобразуем JSON-строку в ассоциативный массив
-                $paramsArray = json_decode($data[15], true);
+
+                $jsonString = preg_replace('/,\s*([\]}])/m', '$1', $data[4]);
+
+                $paramsArray = json_decode($jsonString, true, 512, JSON_BIGINT_AS_STRING);
 
                 // Перебираем каждый параметр и добавляем его к товару
                 if(!is_null($paramsArray))
