@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\V1\XmlSettings\Get\XmlSettingsGetV1Controller;
+use App\Http\Controllers\Api\V1\XmlSettings\Store\XmlSettingsStoreV1Controller;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ImageProxyController;
 use App\Http\Controllers\XmlFileController;
@@ -36,13 +38,29 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list');
 
+
+
     Route::get('/get-completion-percentage', [XmlFileController::class, 'getCompletionPercentage']);
 
     Route::get('/api/get-translated-products-count/{id}', [XmlFileController::class, 'getTranslatedCount']);
 
     Route::get('/fixer', [XmlFileController::class, 'fixer']);
 
-    Route::post('/api/modification/', [XmlFileController::class, 'modify']);
+
+
+
+    // XML API
+    // store settings
+    Route::post('/api/xml/settings/store', [XmlSettingsStoreV1Controller::class, 'store']);
+
+    // get settings
+    Route::get('/api/xml/settings/get/{id}', [XmlSettingsGetV1Controller::class, 'getById']);
+
+    // Mapper
+
+    Route::get('/mapper/add', function () {
+        return Inertia::render('mapper');
+    })->name('mapper_add');
 
 });
 

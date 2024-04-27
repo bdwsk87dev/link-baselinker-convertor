@@ -164,23 +164,24 @@ class ConverterTypeD
             /* Разделитель , или ; между pictures */
             if(isset($data[10]))
             {
+                $images = explode("; ", $data[10]);
+
                 $currentUrl = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
                 $currentUrl .= $_SERVER['HTTP_HOST'];
 
-                $images = explode("; ", $data[10]);
 
-                foreach ($images as $image) {
 
-                    $proxyUrl = $currentUrl . '/proxy/image?url=' . urlencode($image);
+                if(isset($images[0])){
+                    $proxyUrl = $currentUrl . '/proxy/image?url=' . urlencode($images[0]);
 
                     // Создаем тег <picture>
                     $pictureNode = $offer->appendChild($yml->createElement('picture'));
                     // Добавляем содержимое изображения в CDATA-секцию с ссылкой на прокси
-                    $pictureNode->appendChild($yml->createCDATASection($proxyUrl));;
+                    $pictureNode->appendChild($yml->createCDATASection($proxyUrl));
                 }
             }
 
-            if(isset($data[10]))
+            if(isset($data[8]))
             {
                 $paramElement = $yml->createElement('param', $data[8]);
                 $paramElement->setAttribute('name', 'size');

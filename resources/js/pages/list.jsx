@@ -278,6 +278,8 @@ const List = ({xmlFiles}) => {
                     padding:15px;
                     border-radius:5px;
                     margin-bottom:3px;
+                    border-top-left-radius: 0px;
+                    border-top-right-radius: 0px;
                 }
 
                 .file-table{
@@ -484,7 +486,7 @@ const List = ({xmlFiles}) => {
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Модифікації
+                        }}>Налаштування
                         </th>
 
 
@@ -654,7 +656,7 @@ const List = ({xmlFiles}) => {
 
             {isEditFormOpen && <EditForm productId={editingProductId} onClose={closeEditForm}/>}
 
-            {isModFormOpen && <ModForm productId={modProductId} onClose={closeModForm}/>}
+            {isModFormOpen && <ModForm xml_id={modProductId} onClose={closeModForm}/>}
 
         </div>
     );

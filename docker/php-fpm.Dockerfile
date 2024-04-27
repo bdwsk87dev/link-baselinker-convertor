@@ -29,8 +29,8 @@ RUN echo "php_admin_value[post_max_size] = 1600M" >> /usr/local/etc/php-fpm.d/ww
     echo "php_admin_value[upload_max_filesize] = 1600M" >> /usr/local/etc/php-fpm.d/www.conf && \
     echo "php_admin_value[memory_limit] = 160000M" >> /usr/local/etc/php-fpm.d/www.conf
 
-RUN echo "php_admin_value[max_execution_time] = 1200" >> /usr/local/etc/php-fpm.d/www.conf && \
-    echo "php_admin_value[max_input_time] = 1200" >> /usr/local/etc/php-fpm.d/www.conf
+RUN echo "php_admin_value[max_execution_time] = 11200" >> /usr/local/etc/php-fpm.d/www.conf && \
+    echo "php_admin_value[max_input_time] = 11200" >> /usr/local/etc/php-fpm.d/www.conf
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

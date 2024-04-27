@@ -1,22 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const EditForm = ({ productId, onClose }) => {
+const EditForm = ({ xml_id, onClose }) => {
     const [formData, setFormData] = useState({
-        productId: productId,
-        isChangeDescription : false,
-        isChangeDescriptionUA : false,
-        isChangePrice: false,
-        newPrice: '',
-        newDescription: '',
-        newDescriptionUA: ''
+        xml_id: xml_id,
+        price_percent: '',
+        description: '',
+        description_ua: ''
     });
 
     useEffect(() => {
+        const fetchSettings = async () => {
+            // display loader
+            try {
 
-    }, []);
+                setError('Завантажуються данні налаштувань...');
 
-    const [translateError , setError] = useState('Увага, якщо плануєте зробити переклад опису товарів, спочатку зробіть його. Потім змінюйте опис. Так як якщо спочатку змінити опис а потім перекладати - це будуть додаткові витрати на DeepL');
+                const response = await axios.get(`/api/xml/settings/get/${xml_id}`);
+                const { data } = response;
+
+                console.log(response.status);
+
+                if (response.status === 200 && data.status === 'ok')
+                {
+                    setFormData({
+                        ...formData,
+                        price_percent: data.data.price_percent,
+                        description: data.data.description,
+                        description_ua: data.data.description_ua
+                    });
+                }
+
+                setError('Налаштування завантажені!');
+
+            } catch (error) {
+
+                if (error.response.status === 404)
+                {
+                    setError('Налаштувань по цьому файлу ще не існує!');
+                }
+                else
+                {
+                    setError('Помилка при отриманні налаштувань.');
+                }
+            }
+        };
+
+        fetchSettings();
+    }, [xml_id]); // Запрос будет повторно отправлен при изменении xml_id
+
+    const [translateError , setError] = useState('');
 
     // Состояние для отслеживания отправки формы
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,30 +57,26 @@ const EditForm = ({ productId, onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        setError('Зберігання...');
+
         setIsSubmitting(true);
 
         try {
             const formDataToSend = new FormData();
-            formDataToSend.append('productId', formData.productId);
-            formDataToSend.append('isChangeDescription', formData.isChangeDescription);
-            formDataToSend.append('isChangeDescriptionUA', formData.isChangeDescription);
-            formDataToSend.append('isChangePrice', formData.isChangePrice);
-            formDataToSend.append('newPrice', formData.newPrice);
-            formDataToSend.append('newDescription', formData.newDescription);
-            formDataToSend.append('newDescriptionUA', formData.newDescriptionUA);
+            formDataToSend.append('xml_id', formData.xml_id);
+            formDataToSend.append('price_percent', formData.price_percent);
+            formDataToSend.append('description', formData.description);
+            formDataToSend.append('description_ua', formData.description_ua);
 
-            const response = await axios.post('/api/modification/', formDataToSend);
+            const response = await axios.post('/api/xml/settings/store', formDataToSend);
 
             if(response.data['status'] === "ok") {
-                setError('Зміна документу успішно виконана.');
+                setError('Налаштування збережені.');
             }
 
-            else{
-                setError(response.data['message']);
-            }
         } catch (error)
         {
-            console.error('Произошла ошибка при отправке данных:', error);
+            setError('Помилка при зберіганні налаштуваня.');
         }
         finally
         {
@@ -74,62 +103,44 @@ const EditForm = ({ productId, onClose }) => {
     return (
         <div className="modal-background">
             <div className="modal">
-                <div className='translate-modal-title'>Модифікація файлу ID: {productId}</div>
+                <div className='translate-modal-title'>Налаштування файлу ID: {xml_id}</div>
                 <br/>
                 <div>
                 </div>
                 <form onSubmit={handleSubmit}>
 
-
                     <div>
 
-                        Збільшити ціну на %
-                        <input
-                            type="checkbox"
-                            name="isChangePrice"
-                            checked={formData.isChangePrice}
-                            onChange={handleChange}
-                        />
+                        Змінити ціну на % від ціни:
 
                         <input
                             type="text"
-                            name="newPrice"
-                            value={formData.newPrice}
+                            name="price_percent"
+                            value={formData.price_percent}
                             onChange={handleChange}
                             onKeyDown={handleCheckPrice}
-                        />
-
-                        Змінити опис
-                        <input
-                            type="checkbox"
-                            name="isChangeDescription"
-                            checked={formData.isChangeDescription}
-                            onChange={handleChange}
+                            placeholder={'фывыфвы'}
                         />
 
                         <br/>
 
+                        Додати з початку текст в опис товару:
+
                         <textarea
                             style={{width: '100%', minHeight: '170px', fontSize: '12px'}}
-                            name="newDescription"
-                            value={formData.newDescription}
+                            name="description"
+                            value={formData.description}
                             onChange={handleChange}
                         ></textarea>
 
-                        Змінити опис UA
-                        <input
-                            type="checkbox"
-                            name="isChangeDescriptionUA"
-                            checked={formData.isChangeDescriptionUA}
-                            onChange={handleChange}
-                        />
-
                         <br/>
+
+                        Додати з початку текст в опис товару UA:
 
                         <textarea
                             style={{width: '100%', minHeight: '170px', fontSize: '12px'}}
-                            name="newDescriptionUA"
-                            value={formData.newDescriptionUA}
+                            name="description_ua"
+                            value={formData.description_ua}
                             onChange={handleChange}
                         ></textarea>
 
@@ -139,9 +150,8 @@ const EditForm = ({ productId, onClose }) => {
 
                     </div>
 
-
                     <button className="updateButton" type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Відправляється...' : 'Змінити документ'}
+                        {isSubmitting ? 'Відправляється...' : 'Зберегти налаштування'}
                     </button>
                     <button className="closeButton" onClick={onClose}>Закрити вікно</button>
                 </form>

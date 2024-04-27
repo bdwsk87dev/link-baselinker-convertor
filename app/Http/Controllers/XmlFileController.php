@@ -194,7 +194,7 @@ class XmlFileController extends Controller
     public function deeplUsage
     (
         Request $request
-    )
+    ): array|\DeepL\Usage
     {
         $apiKey = $request->input('apiKey');
         try {
@@ -212,7 +212,7 @@ class XmlFileController extends Controller
     public function translate
     (
         Request $request
-    )
+    ): array|bool
     {
         return $this->xmlTranslator->translate(
             $request->input('productId'),
@@ -223,181 +223,202 @@ class XmlFileController extends Controller
     }
 
 
-    public function fix()
-    {
-        $xmlData2 = file_get_contents('../FIXER/A003.xml');
-        // Распарсить XML-данные
-        $xmlNew = new SimpleXMLElement($xmlData2);
-
-        /** Перебираем каждый товар в XML */
-        foreach ($xmlNew->shop->offer as $offer) {
-            // Получаем содержимое description_ua
-            $description = $offer->description_ua;
-
-            // Удаляем возможные дублирующие CDATA-секции
-            $description = preg_replace('/^<!\[CDATA\[\s*/', '<![CDATA[ ', $description);
-            $description = preg_replace('/\s*\]\]>$/s', ' ]]>', $description);
-
-            // Добавляем пробелы между CDATA-секцией и текстом
-            if (strpos($description, '<![CDATA[') !== false) {
-                $description = '<![CDATA[ ' . substr($description, 9);
-            }
-
-            // Заменяем содержимое description_ua на обновленное
-            $offer->description_ua = $description;
-        }
-
-        // Сохраняем измененный XML в новый файл
-        $xmlNew->asXML('../FIXER/A003_R.xml');
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function modify
+    public function store
     (
         Request $request
-    ): array
+    )
     {
-        // Get xml id
         $xmlId = $request->input('productId');
+        $pricePercent = $request->input('pricePercent');
+        $newDescription = $request->input('newDescription');
+        $newDescriptionUA = $request->input('newDescriptionUA');
 
-        // Get percent
-        $percent = $request->input('newPrice');
-        $isChangePrice = $request->input('isChangePrice');
 
-        // Descriptions
-        $isChangeDescription = $request->input('isChangeDescription');
-        $isChangeDescriptionUA = $request->input('isChangeDescriptionUA');
 
-        $newDescription = str_replace("\n", "<br>", $request->input('newDescription'));
-        $newDescriptionUA = str_replace("\n", "<br>", $request->input('newDescriptionUA'));
 
-        if ( XmlFile::where( 'id', $xmlId )->exists() )
-        {
-            $xmlFile = XmlFile::where( 'id', $xmlId )->first();
-            $xmlData = file_get_contents( $xmlFile->converted_full_patch );
-        }
-        else {
-            return
-                [
-                    'status' => 'fail',
-                    'message' => 'xml by id not found'
-                ];
-        }
 
-        $currentTime = date('md_His');
-        $backupFileName = $xmlFile->converted_full_patch . '_old_' . $currentTime . '.xml';
-
-        // Write duplicate xml file
-        file_put_contents(
-            $backupFileName,
-            $xmlData
-        );
-
-        $xmlNew = new SimpleXMLElement($xmlData);
-
-        foreach ($xmlNew->shop->offer as $offer)
-        {
-            if ( $isChangePrice )
-            {
-                /*
-                * Find price value before space ( currency get from other offer tag )
-                * Цена может быть 33.23 PLN или 23.12
-                */
-
-                // Price string from xml offer
-                $price = (string) $offer->price;
-
-                // Find price value before space
-                preg_match('/^([\d.,]+)\s/', $price, $valueMatches);
-
-                // If space exist
-                if ( isset ( $valueMatches[1] ))
-                {
-                    $value = floatval( $valueMatches[1] );
-                }
-                else
-                {
-                    $value = $price;
-                }
-
-                // Change price value in offer
-                $offer->price = round($value + (($value / 100) * $percent),2) .' '.$offer->currencyId;
-
-            }
-
-            if ( $isChangeDescription === 'true' )
-            {
-                // Отримати поточний текст у CDATA-блоку
-                $existingDescription = $offer->description;
-
-                // Перевірити, чи існує CDATA-блок
-                if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>'))
-                {
-                    // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
-                    $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
-                    $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
-                }
-
-                // Update description
-                $newDescriptionText = $newDescription . ' ' . PHP_EOL . $existingDescription;
-
-                unset(
-                    $offer->description
-                );
-
-                $newName = $offer->addChild('description');
-                $newCData = dom_import_simplexml($newName);
-                $newCData->appendChild
-                (
-                    $newCData->ownerDocument->createCDATASection
-                    (
-                        $newDescriptionText
-                    )
-                );
-
-            }
-
-            if ( $isChangeDescriptionUA === 'true' )
-            {
-
-                // Отримати поточний текст у CDATA-блоку
-                $existingDescriptionUA = $offer->description_ua;
-
-                // Перевірити, чи існує CDATA-блок
-                if (str_contains($existingDescriptionUA, '<![CDATA[') && str_contains($existingDescriptionUA, ']]>')) {
-                    // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
-                    $existingDescriptionUA = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescriptionUA);
-                    $existingDescriptionUA = preg_replace('/\s*\]\]>/', '', $existingDescriptionUA);
-                }
-
-                // Створити новий текст з комбінацією нового та поточного
-                $newText = $newDescriptionUA . ' ' . PHP_EOL . $existingDescriptionUA;
-
-                unset(
-                    $offer->description_ua
-                );
-
-                $newName = $offer->addChild('description_ua');
-                $newCData = dom_import_simplexml($newName);
-                $newCData->appendChild
-                (
-                    $newCData->ownerDocument->createCDATASection
-                    (
-                        $newText
-                    )
-                );
-            }
-        }
-
-        $xmlNew->asXML($xmlFile->converted_full_patch);
-
-        return
-            [
-                'status' => 'ok'
-            ];
     }
+
+
+}
+
+
+//public function fix()
+//{
+//    $xmlData2 = file_get_contents('../FIXER/A003.xml');
+//    // Распарсить XML-данные
+//    $xmlNew = new SimpleXMLElement($xmlData2);
+//
+//    /** Перебираем каждый товар в XML */
+//    foreach ($xmlNew->shop->offer as $offer) {
+//        // Получаем содержимое description_ua
+//        $description = $offer->description_ua;
+//
+//        // Удаляем возможные дублирующие CDATA-секции
+//        $description = preg_replace('/^<!\[CDATA\[\s*/', '<![CDATA[ ', $description);
+//        $description = preg_replace('/\s*\]\]>$/s', ' ]]>', $description);
+//
+//        // Добавляем пробелы между CDATA-секцией и текстом
+//        if (strpos($description, '<![CDATA[') !== false) {
+//            $description = '<![CDATA[ ' . substr($description, 9);
+//        }
+//
+//        // Заменяем содержимое description_ua на обновленное
+//        $offer->description_ua = $description;
+//    }
+//
+//    // Сохраняем измененный XML в новый файл
+//    $xmlNew->asXML('../FIXER/A003_R.xml');
+//}
+
+//
+//    /**
+//     * @throws Exception
+//     */
+//    public function modify
+//    (
+//        Request $request
+//    ): array
+//    {
+//        // Get xml id
+//        $xmlId = $request->input('productId');
+//
+//        // Get percent
+//        $percent = $request->input('newPrice');
+//        $isChangePrice = $request->input('isChangePrice');
+//
+//        // Descriptions
+//        $isChangeDescription = $request->input('isChangeDescription');
+//        $isChangeDescriptionUA = $request->input('isChangeDescriptionUA');
+//
+//        $newDescription = str_replace("\n", "<br>", $request->input('newDescription'));
+//        $newDescriptionUA = str_replace("\n", "<br>", $request->input('newDescriptionUA'));
+//
+//        if ( XmlFile::where( 'id', $xmlId )->exists() )
+//        {
+//            $xmlFile = XmlFile::where( 'id', $xmlId )->first();
+//            $xmlData = file_get_contents( $xmlFile->converted_full_patch );
+//        }
+//        else {
+//            return
+//                [
+//                    'status' => 'fail',
+//                    'message' => 'xml by id not found'
+//                ];
+//        }
+//
+//        $currentTime = date('md_His');
+//        $backupFileName = $xmlFile->converted_full_patch . '_old_' . $currentTime . '.xml';
+//
+//        // Write duplicate xml file
+//        file_put_contents(
+//            $backupFileName,
+//            $xmlData
+//        );
+//
+//        $xmlNew = new SimpleXMLElement($xmlData);
+//
+//        foreach ($xmlNew->shop->offer as $offer)
+//        {
+//            if ( $isChangePrice )
+//            {
+//                /*
+//                * Find price value before space ( currency get from other offer tag )
+//                * Цена может быть 33.23 PLN или 23.12
+//                */
+//
+//                // Price string from xml offer
+//                $price = (string) $offer->price;
+//
+//                // Find price value before space
+//                preg_match('/^([\d.,]+)\s/', $price, $valueMatches);
+//
+//                // If space exist
+//                if ( isset ( $valueMatches[1] ))
+//                {
+//                    $value = floatval( $valueMatches[1] );
+//                }
+//                else
+//                {
+//                    $value = $price;
+//                }
+//
+//                // Change price value in offer
+//                $offer->price = round($value + (($value / 100) * $percent),2) .' '.$offer->currencyId;
+//
+//            }
+//
+//            if ( $isChangeDescription === 'true' )
+//            {
+//                // Отримати поточний текст у CDATA-блоку
+//                $existingDescription = $offer->description;
+//
+//                // Перевірити, чи існує CDATA-блок
+//                if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>'))
+//                {
+//                    // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
+//                    $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
+//                    $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
+//                }
+//
+//                // Update description
+//                $newDescriptionText = $newDescription . ' ' . PHP_EOL . $existingDescription;
+//
+//                unset(
+//                    $offer->description
+//                );
+//
+//                $newName = $offer->addChild('description');
+//                $newCData = dom_import_simplexml($newName);
+//                $newCData->appendChild
+//                (
+//                    $newCData->ownerDocument->createCDATASection
+//                    (
+//                        $newDescriptionText
+//                    )
+//                );
+//
+//            }
+//
+//            if ( $isChangeDescriptionUA === 'true' )
+//            {
+//
+//                // Отримати поточний текст у CDATA-блоку
+//                $existingDescriptionUA = $offer->description_ua;
+//
+//                // Перевірити, чи існує CDATA-блок
+//                if (str_contains($existingDescriptionUA, '<![CDATA[') && str_contains($existingDescriptionUA, ']]>')) {
+//                    // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
+//                    $existingDescriptionUA = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescriptionUA);
+//                    $existingDescriptionUA = preg_replace('/\s*\]\]>/', '', $existingDescriptionUA);
+//                }
+//
+//                // Створити новий текст з комбінацією нового та поточного
+//                $newText = $newDescriptionUA . ' ' . PHP_EOL . $existingDescriptionUA;
+//
+//                unset(
+//                    $offer->description_ua
+//                );
+//
+//                $newName = $offer->addChild('description_ua');
+//                $newCData = dom_import_simplexml($newName);
+//                $newCData->appendChild
+//                (
+//                    $newCData->ownerDocument->createCDATASection
+//                    (
+//                        $newText
+//                    )
+//                );
+//            }
+//        }
+//
+//        $xmlNew->asXML($xmlFile->converted_full_patch);
+//
+//        return
+//            [
+//                'status' => 'ok'
+//            ];
+//    }
 
 //    public function fixer()
 //    {
@@ -438,7 +459,7 @@ class XmlFileController extends Controller
 //        echo '1';
 //    }
 
-}
+
 
 
 //public function fix()

@@ -57,7 +57,7 @@ const Menu = () => {
 
             <a href="/home">Домашня</a>
             <a href="/upload">Класична конвертація</a>
-            <a href="/mapper">Відкрити Mapper</a>
+            <a href="/mapper/add">Відкрити Mapper</a>
             <a href="/list">Список лінків</a>
             <a href="/deepl">Deepl</a>
             <a href="/logout">Вийти</a>
