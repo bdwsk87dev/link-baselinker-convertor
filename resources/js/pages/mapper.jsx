@@ -44,8 +44,11 @@ const Mapper = () => {
 
 
     const handleClick = (e, path) => {
-        e.stopPropagation(); // Остановим всплытие события, чтобы клик на родительских элементах не срабатывал
-        alert('Полный путь тега от корня: ' + path);
+        if (path !== undefined){
+            alert('Полный путь тега от корня: ' + path);
+            e.stopPropagation(); // Остановим всплытие события, чтобы клик на родительских элементах не срабатывал
+        }
+
     };
 
     const handleSubmit = async (e) => {
@@ -85,12 +88,12 @@ const Mapper = () => {
         return (
             <ul>
                 {Object.entries(data).slice(0, 200).map(([key, value], index) => (
-                    <li key={key}>
-                        {console.log(value.path)}
-                        <div className={typeof value === 'object' ? 'xmlKey' : 'keyTag'}
-                             onClick={(e) => handleClick(e, value.path)}>
+                    <li key={key}  onClick={(e) => handleClick(e, value.path)}>
+
+                        <div className={typeof value === 'object' ? 'xmlKey' : 'keyTag'}>
                             {isNaN(Number(key)) && key}
                         </div>
+
                         {typeof value === 'object' ? renderTags(value) :
                             <div className={typeof value === 'object' ? '' : 'value'}>  {typeof value === 'string' && value.length > 300 ? `${value.slice(0, 300)}...` : value} </div>}
                     </li>
