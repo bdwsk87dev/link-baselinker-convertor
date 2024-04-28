@@ -25,40 +25,65 @@ class XmlStructReader
     {
         $dataArray = [];
 
-        // Получаем имя элемента
-        $elementName = $xmlObject->getName();
+        // Создаем новый объект DOMDocument
+        $dom = new \DOMDocument();
+
+        // Загружаем XML-строку в объект DOMDocument
+        $dom->loadXML($xmlObject->asXML());
+
+        // Получаем корневой элемент документа
+        $root = $dom->documentElement;
+
+        // Рекурсивно обрабатываем корневой элемент и его дочерние элементы
+        $dataArray = $this->domNodeToArray($root);
+
+        return $dataArray;
+    }
+
+    private function domNodeToArray($node, $path = ''): array
+    {
+        $dataArray = [];
+
+        // Получаем имя элемента и его пространство имен
+        $elementName = $node->nodeName;
+        $namespaceURI = $node->namespaceURI;
+
+        // Добавляем имя элемента к пути
+        $path .= '/' . $elementName;
 
         // Создаем массив данных элемента
-        $elementData = ['tag' => $elementName];
+        $elementData = ['tag' => $elementName, 'path' => $path];
 
-        // Если у элемента есть атрибуты, добавляем их в массив данных элемента
-        $attributes = [];
-        foreach ($xmlObject->attributes() as $name => $value) {
-            $attributes[$name] = (string) $value;
-        }
-        if (!empty($attributes)) {
-            $elementData['attributes'] = $attributes;
+        // Если элемент имеет пространство имен, добавляем его в массив данных элемента
+        if (!empty($namespaceURI)) {
+            $elementData['namespace'] = $namespaceURI;
         }
 
-        // Если у элемента есть текстовое содержимое, добавляем его в массив данных элемента
-        $text = trim((string) $xmlObject);
+        // Получаем текстовое содержимое элемента
+        $text = trim($node->nodeValue);
         if (!empty($text)) {
             $elementData['text'] = $text;
         }
 
+        // Обрабатываем атрибуты элемента
+        if ($node->hasAttributes()) {
+            foreach ($node->attributes as $attribute) {
+                $elementData['attributes'][$attribute->nodeName] = $attribute->nodeValue;
+            }
+        }
+
         // Рекурсивно обрабатываем дочерние элементы
-        foreach ($xmlObject->children() as $child) {
-            $dataArray[$elementName][] = $this->convertXmlToArray($child);
+        if ($node->hasChildNodes()) {
+            foreach ($node->childNodes as $child) {
+                if ($child->nodeType === XML_ELEMENT_NODE) {
+                    $elementData[$child->nodeName][] = $this->domNodeToArray($child, $path);
+                }
+            }
         }
 
-        // Если есть дочерние элементы, добавляем массив данных элемента в общий массив данных
-        if (!empty($dataArray[$elementName])) {
-            $dataArray[$elementName][] = $elementData;
-        } else {
-            // Иначе, если у элемента нет дочерних элементов, просто добавляем его данные в массив
-            $dataArray[] = $elementData;
-        }
+        // Добавляем массив данных элемента в общий массив данных
+        $dataArray[] = $elementData;
 
-        return array_slice($dataArray, 0, 20);
+        return $dataArray;
     }
 }
