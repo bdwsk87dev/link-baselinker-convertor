@@ -40,9 +40,6 @@ const Mapper = () => {
     const [priceFix, setPriceFix] = useState(false);
 
 
-
-
-
     const handleClick = (e, path) => {
         if (path !== undefined){
             alert('Полный путь тега от корня: ' + path);
@@ -75,6 +72,52 @@ const Mapper = () => {
             setIsLoading(false);
         }
     };
+
+
+
+
+    const handleSecondFormSubmit = async (e) => {
+        setStage(3);
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('file', file);
+            formDataToSend.append('tag_product', tagProduct);
+            formDataToSend.append('category_type', categoryType);
+            formDataToSend.append('category_name', categoryName);
+            formDataToSend.append('product_name', productName);
+            formDataToSend.append('product_id', prodId);
+            formDataToSend.append('description', prodDescription);
+            formDataToSend.append('tag_price', tagPrice);
+            formDataToSend.append('tag_image', tagImage);
+            formDataToSend.append('image_parse_type', imageParseType);
+            formDataToSend.append('image_separator', imageSeparator);
+            formDataToSend.append('tag_param', tagParam);
+            formDataToSend.append('price_fix', priceFix.toString());
+
+            const response = await axios.post('/api/converter/pattern/store', formDataToSend);
+            // Set response data to state
+            setResponseData(response.data);
+
+            //setStage(2);
+
+        } catch (error) {
+            // Обработка ошибки
+            console.error('Error occurred:', error);
+            setError('Error occurred while processing the form');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+
+
+
+
 
     let renderCount = 0;
 
@@ -291,7 +334,7 @@ const Mapper = () => {
                 )}
 
                 {stage === 2 && (
-                    <form className="upload-form" encType="multipart/form-data">
+                    <form className="upload-form" encType="multipart/form-data" onSubmit={handleSecondFormSubmit}>
 
                         <label>
                             Product | Оберіть тег товару. У кожного товара є свій тег.
@@ -437,7 +480,7 @@ const Mapper = () => {
                                placeholder="Descripton"
                         />
 
-                        <button type="">Зберегти</button>
+                        <button type="submit">Зберегти</button>
 
                         <button type="">Перевірити</button>
 
@@ -456,8 +499,7 @@ const Mapper = () => {
 
                     {/* Отображение тегов и выбор маппинга */}
 
-
-                    {responseData && renderTags(responseData.struct.original)}
+                    {stage === 2 && responseData && renderTags(responseData.struct.original)}
 
                 </div>
 

@@ -22,7 +22,6 @@ class Uploader
         Request $request
     ): string
     {
-
         return match ($uploadType) {
             'file' => $this->uploader->upload(
                 $request->file('file')

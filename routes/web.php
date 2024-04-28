@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\XmlSettings\Get\XmlSettingsGetV1Controller;
 use App\Http\Controllers\Api\V1\XmlSettings\Store\XmlSettingsStoreV1Controller;
+use App\Http\Controllers\Api\V1\ConverterPattern\Store\ConverterPatternStoreV1Controller;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ImageProxyController;
 use App\Http\Controllers\XmlFileController;
@@ -68,6 +69,9 @@ Route::middleware(['auth'])->group(function () {
             XmlFileController::class, 'upload_from_mapper'
         ])
         ->name('xml.upload');
+
+    // store converter pattern
+    Route::post('/api/converter/pattern/store', [ConverterPatternStoreV1Controller::class, 'store']);
 });
 
 
