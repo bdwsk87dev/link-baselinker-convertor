@@ -57,17 +57,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/xml/settings/get/{id}', [XmlSettingsGetV1Controller::class, 'getById']);
 
     // Mapper
-
+    // Page
     Route::get('/mapper/add', function () {
         return Inertia::render('mapper');
     })->name('mapper_add');
 
+    // Upload file
+    Route::post('/api/xml/file/upload',
+        [
+            XmlFileController::class, 'upload_from_mapper'
+        ])
+        ->name('xml.upload');
 });
 
 
 Route::middleware(['guest'])->group(function () {
-
-
 
     Route::get('/login', function () {
         return Inertia::render('login');

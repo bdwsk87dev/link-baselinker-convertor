@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Mapper;
 
 use App\Application\FileManager\FileReaders\csvReader;
-use App\Application\FileManager\FileReaders\xmlReader;
+use App\Application\FileManager\FileReaders\XmlStructReader;
 use App\Application\FileManager\Uploader;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -14,9 +14,9 @@ class MapperController extends Controller
 
     public function __construct
     (
-        private readonly Uploader $uploader,
-        private readonly XmlReader $xmlReader,
-        private readonly CsvReader $csvReader
+        private readonly Uploader        $uploader,
+        private readonly XmlStructReader $xmlReader,
+        private readonly CsvReader       $csvReader
     )
     {
 
