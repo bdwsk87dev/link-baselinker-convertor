@@ -22,10 +22,8 @@ const Mapper = () => {
     const [stage, setStage] = useState(1);
 
     const handleClick = (e, path) => {
-        // Проверяем, является ли текущий элемент li корневым элементом в иерархии
-        if (e.target.tagName.toLowerCase() === 'li') {
-            alert('Полный путь тега от корня: ' + path);
-        }
+        e.stopPropagation(); // Остановим всплытие события, чтобы клик на родительских элементах не срабатывал
+        alert('Полный путь тега от корня: ' + path);
     };
 
     const handleSubmit = async (e) => {
@@ -62,9 +60,12 @@ const Mapper = () => {
         return (
             <ul>
                 {Object.entries(data).map(([key, value]) => (
-                    <li key={key} onClick={(e) => handleClick(e, value.path)}>
-                        {isNaN(Number(key)) &&
-                            <div className={typeof value === 'object' ? 'xmlKey' : 'keyTag'}>{key}</div>}
+                    <li key={key}>
+                        {console.log(value.path)}
+                        <div className={typeof value === 'object' ? 'xmlKey' : 'keyTag'}
+                             onClick={(e) => handleClick(e, value.path)}>
+                            {isNaN(Number(key)) && key}
+                        </div>
                         {typeof value === 'object' ? renderTags(value) :
                             <div className={typeof value === 'object' ? '' : 'value'}>{value}</div>}
                     </li>
