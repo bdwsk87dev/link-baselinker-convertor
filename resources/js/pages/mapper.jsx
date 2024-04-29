@@ -164,7 +164,6 @@ const Mapper = () => {
                         padding: 10px;
                         margin: 10px 0;
                         border: 1px solid #ccc;
-                        border-radius: 5px;
                     }
 
 
@@ -197,6 +196,8 @@ const Mapper = () => {
                     body{
                         height: 100%;
                         background: #bbbbbb;
+                             font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                             font-size:14px;
                     }
 
                     .block
@@ -205,7 +206,11 @@ const Mapper = () => {
                         padding:15px;
                         border-radius:5px;
                         margin-bottom:5px;
-                            display: flex;
+
+                    }
+
+                    .block-flex{
+                     display: flex;
                     }
 
                     .example{
@@ -220,16 +225,49 @@ const Mapper = () => {
                     input, select {
                         padding: 8px;
                         margin: 5px 0;
-                        border: 1px solid #ccc;
-                        border-radius: 4px;
                         box-sizing: border-box;
-                        font-size: 12px;
-                        color:#0d6efd;
-                        font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
-                        border:1px solid #16A177;
-                        border-radius:0px !important;
-                        width:100%;
+                        color: #000000;
+                        font-family: Verdana, sans-serif;
+                        width: 100%;
+                        border-radius: 0px;
+                        padding-top: 10px;
+                        padding-bottom: 14px;
+                        font-size: 14px;
+                        background: #ffffff;
+                        margin-bottom: 16px;
+                        margin-top: 16px;
+                        border: 1px solid #b5b5b5;
+                        font-size: 14px;
                     }
+
+                    label{
+                        font-size: 14px;
+                        width: 100%;
+                        font-weight: bold;
+                        font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                    }
+
+                    input::placeholder {
+                        color: #000000;
+                        font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                    }
+
+
+                    select::placeholder {
+                        color: #000000;
+                        font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                    }
+
+                    h1{
+                        font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                        font-size: 23px;
+                        font-family: Verdana, sans-serif;
+                        padding: 0px;
+                        margin: 0px;
+                    }
+
+
+
                     .isUploadImages
                     {
                         width:10px;
@@ -290,11 +328,16 @@ const Mapper = () => {
                         text-align: center;
                         padding: 9px;
                         margin: 5px;
+
                     }
 
                     .tagger {
                         justify-content: flex-end;
                         width: 60%;
+                         font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
+                         font-size: 12px;
+                             margin-top: 40px;
+}
                     }
 
                 `}</style>
@@ -302,209 +345,214 @@ const Mapper = () => {
             </Head>
             <Menu/>
 
+
             <div className='block' style={{
                 borderTopLeftRadius: '0px',
                 borderTopRightRadius: '0px'
             }}>
-                {stage === 1 && (
-                    <form className="upload-form" encType="multipart/form-data" onSubmit={handleSubmit}>
-                        1 Спочатку завантажемо файл...
-                        <br/><br/>
-                        Оберіть спосіб завантаження.
-                        <br/>
-                        <select
-                            value={uploadType}
-                            onChange={(e) => setUploadType(e.target.value)}
-                        >
-                            <option value="file">Upload file and convert</option>
-                            <option value="link">Convert from link</option>
-                        </select>
-                        {uploadType === 'file' ? (
-                            <input type="file" onChange={(e) => setFile(e.target.files[0])}/>
-                        ) : (
+                <h1>Додавання налаштування для парсера через Mapper.</h1>
+
+                <div className='block-flex'>
+
+
+                    {stage === 1 && (
+                        <form className="upload-form" encType="multipart/form-data" onSubmit={handleSubmit}>
+                            Перш за все, спочатку завантажемо файл...
+                            <br/><br/>
+                            Оберіть спосіб завантаження.
+                            <br/>
+                            <select
+                                value={uploadType}
+                                onChange={(e) => setUploadType(e.target.value)}
+                            >
+                                <option value="file">Завантажити файл.</option>
+                                <option value="link">Завантажити через лінк.</option>
+                            </select>
+                            {uploadType === 'file' ? (
+                                <input type="file" onChange={(e) => setFile(e.target.files[0])}/>
+                            ) : (
+                                <input
+                                    type="text"
+                                    value={remoteFileLink}
+                                    onChange={(e) => setRemoteFileLink(e.target.value)}
+                                    placeholder="Remote File Link"
+                                />
+                            )}
+                            <button type="submit">Завантажити</button>
+                        </form>
+                    )}
+
+                    {stage === 2 && (
+                        <form className="upload-form" encType="multipart/form-data" onSubmit={handleSecondFormSubmit}>
+
+                            <label>
+                                Тег товару:
+                            </label>
+
                             <input
+                                value={tagProduct}
+                                onChange={(e) => setTagProduct(e.target.value)}
                                 type="text"
-                                value={remoteFileLink}
-                                onChange={(e) => setRemoteFileLink(e.target.value)}
-                                placeholder="Remote File Link"
+                                placeholder="Оберіть тег товару."
                             />
-                        )}
-                        <button type="submit">Submit</button>
-                    </form>
-                )}
 
-                {stage === 2 && (
-                    <form className="upload-form" encType="multipart/form-data" onSubmit={handleSecondFormSubmit}>
+                            <br/><br/>
 
-                        <label>
-                            Product | Оберіть тег товару. У кожного товара є свій тег.
-                        </label>
+                            <label>
+                                Як шукати категорії?
+                            </label>
 
-                        <input
-                            value={tagProduct}
-                            onChange={(e) => setTagProduct(e.target.value)}
-                            type="text"
-                            placeholder="Оберіть тег товару."
-                        />
+                            <select
+                                value={categoryType}
+                                onChange={(e) => setCategoryType(e.target.value)}
+                            >
+                                <option value="separate">Категорії в окремих тегах</option>
+                                <option value="inProducts">Категорії в товарах у вигляді тегів або параметрів</option>
+                            </select>
 
-                        <br/><br/>
+                            <label>
+                                CategoryName:
+                            </label>
 
-                        <label>
-                            Як шукати категорії?
-                        </label>
+                            <input
+                                value={categoryName}
+                                onChange={(e) => setCategoryName(e.target.value)}
+                                type="text"
+                                placeholder="Оберіть назву товару."
+                            />
 
-                        <select
-                            value={categoryType}
-                            onChange={(e) => setCategoryType(e.target.value)}
-                        >
-                            <option value="separate">Категорії в окремих тегах</option>
-                            <option value="inProducts">Категорії в товарах у вигляді тегів або параметрів</option>
-                        </select>
+                            <br/><br/>
 
-                        <label>
-                            CategoryName | Оберіть тег або атрибут назви категорії
-                        </label>
+                            <label>
+                                ProductName:
+                            </label>
 
-                        <input
-                            value={categoryName}
-                            onChange={(e) => setCategoryName(e.target.value)}
-                            type="text"
-                            placeholder="Оберіть назву товару."
-                        />
+                            <input
+                                value={productName}
+                                onChange={(e) => setProductName(e.target.value)}
+                                type="text"
+                                placeholder="Оберіть назву товару."
+                            />
 
-                        <br/><br/>
+                            <label>
+                                ProductId:
+                            </label>
 
-                        <label>
-                            ProductName | Оберіть тег або атрибут назви товару в тегу товара, який ви обрали вище...
-                        </label>
+                            <input
+                                value={prodId}
+                                onChange={(e) => setProdId(e.target.value)}
+                                type="text"
+                                placeholder="Оберіть назву товару."
+                            />
 
-                        <input
-                            value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
-                            type="text"
-                            placeholder="Оберіть назву товару."
-                        />
+                            <label>
+                                Description:
+                            </label>
 
-                        <label>
-                            ProductId | ID товару
-                        </label>
+                            <input
+                                value={prodDescription}
+                                onChange={(e) => setProdDescription(e.target.value)}
+                                type="text"
+                                placeholder="Оберіть тег опису товара."
+                            />
 
-                        <input
-                            value={prodId}
-                            onChange={(e) => setProdId(e.target.value)}
-                            type="text"
-                            placeholder="Оберіть назву товару."
-                        />
+                            <label>
+                                Price:
+                            </label>
 
-                        <label>
-                            Description | Оберіть тег або атрибут опису товара.
-                        </label>
+                            <input
+                                value={tagPrice}
+                                onChange={(e) => setTagPrice(e.target.value)}
+                                type="text"
+                                placeholder="Оберіть тег ціни."
+                            />
 
-                        <input
-                            value={prodDescription}
-                            onChange={(e) => setProdDescription(e.target.value)}
-                            type="text"
-                            placeholder="Оберіть тег опису товара."
-                        />
+                            <br/><br/>
 
-                        <label>
-                            Price | Оберіть тег або атрибут ціни товара.
-                        </label>
+                            <label>
+                                Picture:
+                            </label>
 
-                        <input
-                            value={tagPrice}
-                            onChange={(e) => setTagPrice(e.target.value)}
-                            type="text"
-                            placeholder="Оберіть тег ціни."
-                        />
+                            <input
+                                value={tagImage}
+                                onChange={(e) => setTagImage(e.target.value)}
+                                type="text"
+                                placeholder="Оберіть тег ціни."
+                            />
 
-                        <br/><br/>
+                            <label>
+                                Як парсити зображення?
+                            </label>
 
-                        <label>
-                            Picture | Оберіть тег або атрибут зображення товара.
-                        </label>
+                            <select
+                                value={imageParseType}
+                                onChange={(e) => setImageParseType(e.target.value)}
+                            >
+                                <option value="single">Всі зображення знаходяться в одному тегу.</option>
+                                <option value="separate">Кожне зображення в окремому такому тегу</option>
+                            </select>
 
-                        <input
-                            value={tagImage}
-                            onChange={(e) => setTagImage(e.target.value)}
-                            type="text"
-                            placeholder="Оберіть тег ціни."
-                        />
+                            <label>
+                                Символ розділу зображень
+                            </label>
 
-                        <label>
-                            Picture type | Оберіть як парсити зображення.
-                        </label>
+                            <select
+                                value={imageSeparator}
+                                onChange={(e) => setImageSeparator(e.target.value)}
+                            >
+                                <option value="1">;</option>
+                                <option value="2">,</option>
+                            </select>
 
-                        <select
-                            value={imageParseType}
-                            onChange={(e) => setImageParseType(e.target.value)}
-                        >
-                            <option value="single">Всі зображення знаходяться в одному тегу.</option>
-                            <option value="separate">Кожне зображення в окремому такому тегу</option>
-                        </select>
+                            <label>
+                                Тег параметрів.
+                            </label>
 
-                        <label>
-                            Який символ розділяє зображення, якщо всі зображення в одному тегу
-                        </label>
+                            <input
+                                value={tagParam}
+                                onChange={(e) => setTagParam(e.target.value)}
+                                type="text"
+                                placeholder="Оберіть тег параметрів."
+                            />
 
-                        <select
-                            value={imageSeparator}
-                            onChange={(e) => setImageSeparator(e.target.value)}
-                        >
-                            <option value="1">;</option>
-                            <option value="2">,</option>
-                        </select>
+                            <label>
+                                Фікс ціни для Андрія.
+                            </label>
 
-                        <label>
-                            Param | Оберіть тег параметрів. Тільки якщо параметри в окремих тегах
-                        </label>
+                            <input style={{
+                                width: '10px',
+                            }}
+                                   type="checkbox"
+                                   checked={priceFix}
+                                   onChange={(e) => setPriceFix(e.target.checked)}
+                                   placeholder="Descripton"
+                            />
 
-                        <input
-                            value={tagParam}
-                            onChange={(e) => setTagParam(e.target.value)}
-                            type="text"
-                            placeholder="Оберіть тег параметрів."
-                        />
+                            <button type="submit">Зберегти</button>
 
-                        <label>
-                            Фікс, вставити точку в ціні перед останніми двома цифрами якщо ії немає. ( Андрія фікс! Не
-                            чіпати! )
-                        </label>
+                            <button type="">Перевірити</button>
 
-                        <input style={{
-                            width: '10px',
-                        }}
-                               type="checkbox"
-                               checked={priceFix}
-                               onChange={(e) => setPriceFix(e.target.checked)}
-                               placeholder="Descripton"
-                        />
+                        </form>
+                    )}
 
-                        <button type="submit">Зберегти</button>
+                    <div className="tagger">
+                        {isLoading && <p>Завантаження...</p>}
+                        {error && <p>Error: {error}</p>}
+                        {/*{responseData && (*/}
+                        {/*    <div>*/}
+                        {/*        <h2>XML File Structure:</h2>*/}
+                        {/*        <pre>{JSON.stringify(responseData, null, 2)}</pre>*/}
+                        {/*    </div>*/}
+                        {/*)}*/}
 
-                        <button type="">Перевірити</button>
+                        {/* Отображение тегов и выбор маппинга */}
 
-                    </form>
-                )}
+                        {stage === 2 && responseData && renderTags(responseData.struct.original)}
 
-                <div className="tagger">
-                    {isLoading && <p>Loading...</p>}
-                    {error && <p>Error: {error}</p>}
-                    {/*{responseData && (*/}
-                    {/*    <div>*/}
-                    {/*        <h2>XML File Structure:</h2>*/}
-                    {/*        <pre>{JSON.stringify(responseData, null, 2)}</pre>*/}
-                    {/*    </div>*/}
-                    {/*)}*/}
-
-                    {/* Отображение тегов и выбор маппинга */}
-
-                    {stage === 2 && responseData && renderTags(responseData.struct.original)}
+                    </div>
 
                 </div>
-
             </div>
-
         </div>
     );
 

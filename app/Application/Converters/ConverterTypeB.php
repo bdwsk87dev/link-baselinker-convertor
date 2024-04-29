@@ -39,6 +39,8 @@ class ConverterTypeB
         $categoriesTag = $shop->appendChild($yml->createElement('categories'));
 
         $categories = [];
+
+
         foreach ($xml->o as $product) {
             if(isset($product->cat)){
 

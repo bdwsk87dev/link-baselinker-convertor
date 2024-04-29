@@ -10,7 +10,7 @@ class ImageProxyController extends Controller
     public function getImage(Request $request)
     {
         // Получаем URL изображения из запроса
-        $imageUrl = $request->input('url');
+        $imageUrl = urldecode($request->input('url'));
 
         // Делаем запрос к URL изображения
         $response = Http::get($imageUrl);

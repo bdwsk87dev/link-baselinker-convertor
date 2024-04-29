@@ -169,17 +169,45 @@ class ConverterTypeD
                 $currentUrl = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
                 $currentUrl .= $_SERVER['HTTP_HOST'];
 
+//                if(isset($images[0])){
+//                    $proxyUrl = $currentUrl . '/proxy/image?url=' . urlencode($images[0]);
+//                    // Создаем тег <picture>
+//                    $pictureNode = $offer->appendChild($yml->createElement('picture'));
+//                    // Добавляем содержимое изображения в CDATA-секцию с ссылкой на прокси
+//                    $pictureNode->appendChild($yml->createCDATASection($proxyUrl));
+//                }
 
+                $foundImage = false;
 
-                if(isset($images[0])){
-                    $proxyUrl = $currentUrl . '/proxy/image?url=' . urlencode($images[0]);
+                foreach ($images as $image) {
+                    // Если URL-адрес начинается с "https://app.", пропускаем его
+                    if (strpos(urldecode($image), 'https://app.') === 0) {
+                        continue;
+                    }
+
+                    // Кодируем URL-адрес и создаем ссылку на прокси
+                    $proxyUrl = $currentUrl . '/proxy/image?url=' . urlencode($image);
 
                     // Создаем тег <picture>
                     $pictureNode = $offer->appendChild($yml->createElement('picture'));
                     // Добавляем содержимое изображения в CDATA-секцию с ссылкой на прокси
                     $pictureNode->appendChild($yml->createCDATASection($proxyUrl));
+
+                    // Помечаем, что изображение было найдено
+                    $foundImage = true;
+
+                    // Прерываем цикл после добавления первого подходящего URL-адреса
+                    break;
                 }
+
+                // Если изображение не было найдено, пропускаем товар
+                if (!$foundImage) {
+                    continue;
+                }
+
             }
+
+
 
             if(isset($data[8]))
             {

@@ -78,6 +78,7 @@ class ConverterTypeC
             $categoriesTag->appendChild($categoryElement);
         }
 
+
         /** Обработка товаров */
         foreach ($xml->entry as $product) {
             $tagG = $product->children('g', true);
