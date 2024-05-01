@@ -12,8 +12,12 @@ class ImageProxyController extends Controller
         // Получаем URL изображения из запроса
         $imageUrl = urldecode($request->input('url'));
 
+        $userAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-GB; rv:1.9.2.9) Gecko/20100824 Firefox/3.6.9 (.NET CLR 3.5.30729; .NET CLR 4.0.20506)";
+
         // Делаем запрос к URL изображения
-        $response = Http::get($imageUrl);
+        $response = Http::withHeaders([
+            'User-Agent' => $userAgent,
+        ])->get($imageUrl);
 
         // Проверяем, успешно ли выполнен запрос
         if ($response->successful()) {

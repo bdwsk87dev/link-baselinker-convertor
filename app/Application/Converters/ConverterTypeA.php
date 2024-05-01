@@ -153,18 +153,20 @@ class ConverterTypeA
                 }
             }
 
-            /** Дополнительные параметры */
-            foreach ($product->attributes->attribute as $attribute) {
+            if ($product->attributes->attribute !== null) {
+                /** Дополнительные параметры */
+                foreach ($product->attributes->attribute as $attribute) {
 
-                // Экранирование символов в значении перед добавлением в XML
-                $attributeValue = htmlspecialchars($attribute->attribute_value, ENT_XML1, 'UTF-8');
-                // Создаем элемент param
-                $paramElement = $yml->createElement('param', $attributeValue);
+                    // Экранирование символов в значении перед добавлением в XML
+                    $attributeValue = htmlspecialchars($attribute->attribute_value, ENT_XML1, 'UTF-8');
+                    // Создаем элемент param
+                    $paramElement = $yml->createElement('param', $attributeValue);
 
-                // Устанавливаем атрибуты name и value
-                $paramElement->setAttribute('name', $attribute->attribute_name);
-                // Добавляем элемент param в offer
-                $offer->appendChild($paramElement);
+                    // Устанавливаем атрибуты name и value
+                    $paramElement->setAttribute('name', $attribute->attribute_name);
+                    // Добавляем элемент param в offer
+                    $offer->appendChild($paramElement);
+                }
             }
         }
 

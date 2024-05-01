@@ -49,6 +49,8 @@ services:
             - ./docker/nginx:/etc/nginx/conf.d
         depends_on:
             - postgres
+        environment:
+            - NGINX_HTTP_TIMEOUT=300s
 
     node:
         build:

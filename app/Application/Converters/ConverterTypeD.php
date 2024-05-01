@@ -15,10 +15,12 @@ class ConverterTypeD
      * @throws DOMException
      * @throws Exception
      */
-    public function convert(
+    public function convert
+    (
         $uploadFilePath,
         $params
-    ){
+    )
+    {
 
         /** Read cvs file **/
         $file = fopen($uploadFilePath, 'r');
@@ -35,7 +37,6 @@ class ConverterTypeD
         $categoriesTag = $shop->appendChild($yml->createElement('categories'));
 
         /** Собираем все категории */
-
         $categories = [];
         $categoriesCount = 0;
 
@@ -47,9 +48,9 @@ class ConverterTypeD
                 continue;
             }
 
-            if(isset($data[9]))
+            if (isset($data[9]))
             {
-                $categoryName = $data[9]; // Столбец J
+                $categoryName = $data[9];
                 $categoryNumber = $this->lettersToNumbers
                 (
                     $categoryName,
@@ -75,11 +76,11 @@ class ConverterTypeD
         /** Обработка товаров */
         rewind($file);
 
-
         $first = true;
         while (($data = fgetcsv($file)) !== FALSE)
         {
-            if($first){
+            if ($first)
+            {
                 $first = false;
                 continue;
             }
@@ -102,7 +103,8 @@ class ConverterTypeD
                     $offer->appendChild($yml->createElement('categoryId', $categories[$categoryName]['id']));
                 }
             }
-            else{
+            else
+            {
                 $offer->appendChild($yml->createElement('categoryId', ''));
             }
 
@@ -136,7 +138,6 @@ class ConverterTypeD
                 $nameElement->appendChild($yml->createCDATASection(trim($data[2])));
             }
 
-
             /** Vendor Code */
             $offer->appendChild($yml->createElement('vendorCode', ''));
 
@@ -161,7 +162,6 @@ class ConverterTypeD
             $offer->appendChild($yml->createElement('description_ua', ''));
 
             /** Картинки товара */
-            /* Разделитель , или ; между pictures */
             if(isset($data[10]))
             {
                 $images = explode("; ", $data[10]);
@@ -169,28 +169,21 @@ class ConverterTypeD
                 $currentUrl = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
                 $currentUrl .= $_SERVER['HTTP_HOST'];
 
-//                if(isset($images[0])){
-//                    $proxyUrl = $currentUrl . '/proxy/image?url=' . urlencode($images[0]);
-//                    // Создаем тег <picture>
-//                    $pictureNode = $offer->appendChild($yml->createElement('picture'));
-//                    // Добавляем содержимое изображения в CDATA-секцию с ссылкой на прокси
-//                    $pictureNode->appendChild($yml->createCDATASection($proxyUrl));
-//                }
-
                 $foundImage = false;
 
-                foreach ($images as $image) {
+                foreach ($images as $image)
+                {
                     // Если URL-адрес начинается с "https://app.", пропускаем его
-                    if (strpos(urldecode($image), 'https://app.') === 0) {
+                    if (strpos(urldecode($image), 'https://app.') === 0)
+                    {
                         continue;
                     }
 
-                    // Кодируем URL-адрес и создаем ссылку на прокси
-                    $proxyUrl = $currentUrl . '/proxy/image?url=' . urlencode($image);
+                    $fileName = basename($image);
 
-                    // Создаем тег <picture>
+                    $proxyUrl = $currentUrl . '/images/usmall/' . urlencode($fileName);
+
                     $pictureNode = $offer->appendChild($yml->createElement('picture'));
-                    // Добавляем содержимое изображения в CDATA-секцию с ссылкой на прокси
                     $pictureNode->appendChild($yml->createCDATASection($proxyUrl));
 
                     // Помечаем, что изображение было найдено
@@ -204,10 +197,7 @@ class ConverterTypeD
                 if (!$foundImage) {
                     continue;
                 }
-
             }
-
-
 
             if(isset($data[8]))
             {
@@ -237,7 +227,11 @@ class ConverterTypeD
                 }
             }
 
+
         }
+
+        // Определяем, чтобы XML был красиво отформатирован с отступами и переносами строк
+        $yml->formatOutput = true;
 
         /** Сохранение YML-файла */
         $yml->save($uploadFilePath."_c_.xml");

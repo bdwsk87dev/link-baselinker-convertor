@@ -113,9 +113,12 @@ class ConverterTypeE
             }
 
             /** Цена */
-            if(isset($product->price))
-            {
-                $offer->appendChild($yml->createElement('price', $product->price));
+            if(isset($product->price)) {
+                $price = (float) $product->price;
+                $formattedPrice = (!str_contains($price, '.') && !str_contains($price, ',')) ?
+                    number_format($price / 100, 2, ',', '') :
+                    $price; // Если в цене нет ни точек, ни запятых, форматируем ее с запятой перед двумя последними символами
+                $offer->appendChild($yml->createElement('price', $formattedPrice));
             }
 
             /** Vendor */
@@ -170,6 +173,9 @@ class ConverterTypeE
             }
 
         }
+
+        // Определяем, чтобы XML был красиво отформатирован с отступами и переносами строк
+        $yml->formatOutput = true;
 
         /** Сохранение YML-файла */
         $yml->save($uploadFilePath."_c_.xml");

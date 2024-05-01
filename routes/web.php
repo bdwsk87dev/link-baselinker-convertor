@@ -47,9 +47,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/fixer', [XmlFileController::class, 'fixer']);
 
-
-
-
     // XML API
     // store settings
     Route::post('/api/xml/settings/store', [XmlSettingsStoreV1Controller::class, 'store']);
@@ -58,12 +55,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/xml/settings/get/{id}', [XmlSettingsGetV1Controller::class, 'getById']);
 
     // Mapper
-    // Page
-    Route::get('/mapper/add', function () {
-        return Inertia::render('mapper');
-    })->name('mapper_add');
+    // XML
 
-    // Upload file
+    Route::get('/mapper/xml', function () {
+        return Inertia::render('mapperXML');
+    })->name('mapperXML');
+
+    // CSV
+    Route::get('/mapper/csv', function () {
+        return Inertia::render('mapperCSV');
+    })->name('mapperCSV');
+
+    // Upload xlm file
     Route::post('/api/xml/file/upload',
         [
             XmlFileController::class, 'upload_from_mapper'
@@ -71,7 +74,18 @@ Route::middleware(['auth'])->group(function () {
         ->name('xml.upload');
 
     // store converter pattern
-    Route::post('/api/converter/pattern/store', [ConverterPatternStoreV1Controller::class, 'store']);
+    Route::post('/api/converter/pattern/store',
+        [
+            ConverterPatternStoreV1Controller::class, 'store'
+        ]);
+
+    // Upload csv file
+    Route::post('/api/csv/file/upload',
+        [
+            CsvFileController::class, 'upload_from_mapper'
+        ])
+        ->name('xml.upload');
+
 });
 
 
