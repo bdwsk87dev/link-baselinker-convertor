@@ -204,10 +204,14 @@ class XmlFileController extends Controller
         return inertia('list', compact('xmlFiles'));
     }
 
-    public function show($id)
+    public function show
+    (
+        $id
+    )
     {
-        // Получение пути к XML-файлу
+        // Получение пути к XML-файлу из базы данных
         $xmlFile = XmlFile::findOrFail($id);
+        // Получаем путь к сконвертированному файлу
         $xmlFilePath = $xmlFile->converted_full_patch;
 
         // Проверка на существование файла
