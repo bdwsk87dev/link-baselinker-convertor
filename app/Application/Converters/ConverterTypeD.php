@@ -112,7 +112,13 @@ class ConverterTypeD
             if(isset($data[2]))
             {
                 $nameElement = $offer->appendChild($yml->createElement('name'));
-                $nameElement->appendChild($yml->createCDATASection(trim($data[2])));
+                if (isset($data[8])){
+                    $nameElement->appendChild($yml->createCDATASection(trim($data[2]. ' '. $data[8])));
+                }
+                else{
+                    $nameElement->appendChild($yml->createCDATASection(trim($data[2])));
+                }
+
             }
 
 
@@ -170,6 +176,7 @@ class ConverterTypeD
                 $currentUrl .= $_SERVER['HTTP_HOST'];
 
                 $foundImage = false;
+                $fileName = '';
 
                 foreach ($images as $image)
                 {
@@ -195,6 +202,10 @@ class ConverterTypeD
 
                 // Если изображение не было найдено, пропускаем товар
                 if (!$foundImage) {
+                    continue;
+                }
+
+                if (!file_exists(public_path('/images/usmall/' . urlencode($fileName)))){
                     continue;
                 }
             }

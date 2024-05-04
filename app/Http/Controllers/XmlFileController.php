@@ -215,39 +215,71 @@ class XmlFileController extends Controller
         $xmlFilePath = $xmlFile->converted_full_patch;
 
         // Проверка на существование файла
-        if (File::exists($xmlFilePath)) {
+        if (File::exists($xmlFilePath))
+        {
             $reader = new XMLReader();
             $reader->open($xmlFilePath);
 
+            // Получаем настройки по данному файалу.
             // Получение процента и описания из XmlSetting
             $setting = XmlSetting::where('xml_id', $id)->first();
 
-            // Обработка только если есть XmlSetting
-            if ($setting) {
+            // Обработка только если есть XmlSetting, если нет - файл отображаем как есть
+            if ($setting)
+            {
                 $percent = $setting->price_percent;
                 $description = $setting->description ?? '';
                 $description_ua = $setting->description_ua ?? '';
 
                 // Создание пустого XML-документа
-                $xmlDoc = new DOMDocument();
+                $xmlDoc = new DOMDocument('1.0', 'utf-8');
                 $xmlDoc->preserveWhiteSpace = false;
                 $xmlDoc->formatOutput = true;
 
-                // Create root tag
-                $root = $xmlDoc->createElement('root');
 
-                // Add root tag to document
-                $xmlDoc->appendChild($root);
+                // Create root tag <yml_catalog>
+                $ymlCatalog = $xmlDoc->createElement('yml_catalog');
+                $ymlCatalog->setAttribute('date', date('Y-m-d')); // Установка атрибута date
+                $xmlDoc->appendChild($ymlCatalog);
 
-                while ($reader->read()) {
-                    if ($reader->nodeType == XMLReader::ELEMENT && $reader->localName == 'offer') {
+                // Create shop tag
+                $root = $xmlDoc->createElement('shop');
+                $ymlCatalog->appendChild($root);
+
+                while ($reader->read())
+                {
+
+                    if ($reader->nodeType == XMLReader::ELEMENT && $reader->localName == 'categories') {
+                        // Загрузка содержимого категорий
+                        $categories = simplexml_load_string($reader->readOuterXML());
+
+                        // Преобразование SimpleXMLElement в DOMElement
+                        $domElement = dom_import_simplexml($categories);
+
+                        // Импортирование DOMElement в пустой XML-документ
+                        $domElement = $xmlDoc->importNode($domElement, true);
+
+                        // Добавляем узел категорий в корневой элемент
+                        $root->appendChild($domElement);
+                    }
+
+                    if ($reader->nodeType == XMLReader::ELEMENT && $reader->localName == 'offer')
+                    {
                         // Загрузка содержимого offer
                         $offer = simplexml_load_string($reader->readOuterXML());
 
                         // Update offer price
-                        $price = (float) $offer->price;
-                        $newPrice = round($price * (1 + ($percent / 100)), 2);
+                        $price = (float) $offer->price * (1 + ($percent / 100));
+
+                        if(isset($setting->delivery_price) && $setting->delivery_price!=='')
+                        {
+                            $price = $price + $setting->delivery_price;
+                        }
+
+                        $newPrice = round($price, 2);
+
                         $offer->price = $newPrice;
+
 
                         // Преобразование SimpleXMLElement в DOMElement
                         $domElement = dom_import_simplexml($offer);
@@ -257,7 +289,6 @@ class XmlFileController extends Controller
 
                         // Добавляем узел offer в корневой элемент
                         $root->appendChild($domElement);
-
 
                         // Удаление описания
                         $descriptionNode = $domElement->getElementsByTagName('description')->item(0);
@@ -301,199 +332,6 @@ class XmlFileController extends Controller
         }
     }
 
-
-//    public function show($id)
-//    {
-//        // Получение пути к XML-файлу
-//        $xmlFile = XmlFile::findOrFail($id);
-//        $xmlFilePath = $xmlFile->converted_full_patch;
-//
-//        // Проверка на существование файла
-//        if (File::exists($xmlFilePath)) {
-//            $reader = new XMLReader();
-//            $reader->open($xmlFilePath);
-//
-//            // Получение процента и описания из XmlSetting
-//            $setting = XmlSetting::where('xml_id', $id)->first();
-//
-//
-//            // Обработка только если есть XmlSetting
-//            if ($setting) {
-//                $percent = $setting->price_percent;
-//                $description = $setting->description ?? '';
-//                $description_ua = $setting->description_ua ?? '';
-//
-//                // Создание пустого XML-документа
-//                $xmlDoc = new DOMDocument();
-//                $xmlDoc->preserveWhiteSpace = false;
-//                $xmlDoc->formatOutput = true;
-//                $root = $xmlDoc->createElement('root');
-//                $xmlDoc->appendChild($root);
-//
-//                while ($reader->read()) {
-//                    if ($reader->nodeType == XMLReader::ELEMENT && $reader->localName == 'offer') {
-//                        $offer = simplexml_load_string($reader->readOuterXML());
-//
-//                        // Обновление цены
-//                        $price = (float) $offer->price;
-//                        $newPrice = round($price * (1 + ($percent / 100)), 2);
-//                        $offer->price = $newPrice;
-//
-//
-//                        // Обновление описания и описания на украинском языке
-//                        if ($description) {
-//
-//
-//
-//
-//                            // Создаем CDATA-секцию для описания
-//                            $descriptionCDATA = $xmlDoc->createCDATASection($description.PHP_EOL.$offer->description);
-//                            $descriptionNode = $xmlDoc->createElement('description');
-//                            $descriptionNode->appendChild($descriptionCDATA);
-//                            $root->appendChild($descriptionNode);
-//                               }
-//
-//                        if ($description_ua) {
-//                            $descriptionCDATA = $xmlDoc->createCDATASection($description_ua.PHP_EOL.$offer->description_ua);
-//                            $descriptionNode = $xmlDoc->createElement('description_ua');
-//                            $descriptionNode->appendChild($descriptionCDATA);
-//                            $root->appendChild($descriptionNode);
-//                             }
-//
-//                        // Преобразование SimpleXMLElement в DOMElement
-//                        $domElement = dom_import_simplexml($offer);
-//
-//                        // Импортирование DOMElement в пустой XML-документ
-//                        $domElement = $xmlDoc->importNode($domElement, true);
-//                        $root->appendChild($domElement);
-//                    }
-//                }
-//
-//                $reader->close();
-//
-//
-//                // Возвращаем XML-документ как ответ с заголовком Content-Type: application/xml
-//                return response($xmlDoc->saveXML())->header('Content-Type', 'application/xml');
-//            } else {
-//                // Возвращаем оригинальный контент если нет XmlSetting
-//                return response()->file($xmlFilePath, ['Content-Type' => 'application/xml']);
-//            }
-//        } else {
-//            // Возвращаем 404 если файл не существует
-//            abort(404);
-//        }
-//    }
-
-
-
-
-
-
-//    public function show
-//    (
-//        $id
-//    )
-//    {
-//
-//        $xmlFile = XmlFile::findOrFail($id);
-//
-//        // Refresh update variables
-//        $description = '';
-//        $description_ua = '';
-//        $percent = 0;
-//
-//        if (File::exists($xmlFile->converted_full_patch))
-//        {
-//            $content = File::get($xmlFile->converted_full_patch);
-//
-//            // Создание объекта DOMDocument и загрузка XML
-//            $dom = new DOMDocument();
-//            $dom->loadXML($content, LIBXML_PARSEHUGE);
-//
-//            // Получение всех элементов <offer>
-//            $offers = $dom->getElementsByTagName('offer');
-//
-//            $setting = XmlSetting::where('xml_id', $id)->first();
-//
-//            if ($setting)
-//            {
-//                $percent = $setting->price_percent;
-//                $description = ($setting->description != 'null') ? $setting->description : '';
-//                $description_ua = ($setting->description_ua != 'null') ? $setting->description_ua : '';
-//
-//                foreach ($offers as $offer)
-//                {
-//                    // Получение элемента <price> внутри текущего элемента <offer>
-//                    $priceElement = $offer->getElementsByTagName('price')->item(0);
-//
-//                    // Получение текущей цены из элемента <price>
-//                    $currentPrice = (float) $priceElement->textContent;
-//
-//                    // Вычисление новой цены с учетом процента
-//                    $newPrice = round($currentPrice * (1 + ($percent / 100)), 2);
-//
-//                    // Установка новой цены в элемент <price>
-//                    $priceElement->nodeValue = $newPrice;
-//
-//                    if($description != '')
-//                    {
-//                        // Получение элемента <description> внутри текущего элемента <offer>
-//                        $descriptionElement = $offer->getElementsByTagName('description')->item(0);
-//
-//                        // Обновление описания с добавлением нового текста в CDATA-формате
-//                        $existingDescription = $descriptionElement->textContent;
-//                        $description = preg_replace("/\r\n|\n|\r/", " ", $description);
-//                        $newDescriptionText = $description . ' ' . PHP_EOL . $existingDescription;
-//
-//                        // Удаление существующего элемента <description>
-//                        $offer->removeChild($descriptionElement);
-//
-//                        // Создание нового элемента <description> с обновленным описанием
-//                        $newDescriptionElement = $dom->createElement('description');
-//                        $newDescriptionElement->appendChild($dom->createCDATASection($newDescriptionText));
-//                        $offer->appendChild($newDescriptionElement);
-//
-//                    }
-//
-//                    // UA
-//
-//                    if($description_ua != '')
-//                    {
-//                        // Получение элемента <description> внутри текущего элемента <offer>
-//                        $descriptionUaElement = $offer->getElementsByTagName('description_ua')->item(0);
-//
-//                        // Обновление описания с добавлением нового текста в CDATA-формате
-//                        $existingDescription = $descriptionUaElement->textContent;
-//                        $description_ua = preg_replace("/\r\n|\n|\r/", " ", $description_ua);
-//                        $newDescriptionText = $description_ua . ' ' . PHP_EOL . $existingDescription;
-//
-//                        // Удаление существующего элемента <description>
-//                        $offer->removeChild($descriptionUaElement);
-//
-//                        // Создание нового элемента <description> с обновленным описанием
-//                        $newDescriptionElement = $dom->createElement('description_ua');
-//                        $newDescriptionElement->appendChild($dom->createCDATASection($newDescriptionText));
-//                        $offer->appendChild($newDescriptionElement);
-//                    }
-//                }
-//
-//                // Получение измененного XML
-//                $modifiedXml = $dom->saveXML();
-//
-//                return FacadeResponse::make($modifiedXml, 200, [
-//                    'Content-Type' => 'application/xml',
-//                ]);
-//            }
-//            else
-//            {
-//                return FacadeResponse::make($content, 200, [
-//                'Content-Type' => 'application/xml',
-//                ]);
-//            }
-//        } else {
-//            abort(404);
-//        }
-//    }
 
     public function delete
     (
@@ -560,12 +398,6 @@ class XmlFileController extends Controller
         $newDescriptionUA = $request->input('newDescriptionUA');
 
     }
-
-
-
-
-
-
 
 
     /**
@@ -717,13 +549,38 @@ class XmlFileController extends Controller
     }
 
 
+    public function fixer()
+    {
+        $xmlData2 = file_get_contents('../FIXER/USMALL 1 FILE.xml');
+        // Распарсить XML-данные
+        $xmlNew = new SimpleXMLElement($xmlData2);
+
+        /** Перебираем каждый товар в XML */
+        foreach ($xmlNew->shop->offer as $offer) {
+            // Проверяем наличие параметра с атрибутом name равным "size"
+            foreach ($offer->param as $param) {
+                if ((string) $param['name'] === 'size') {
+                    // Добавляем значение атрибута size к имени товара
+                    $offer->name = $offer->name . ' ' . $param;
+                    $offer->name_ua = $offer->name_ua . ' ' . $param;
+                    break; // Прерываем цикл, так как нашли нужный параметр
+                }
+            }
+        }
+
+        // Сохраняем измененный XML в новый файл
+        $xmlNew->asXML('../FIXER/USMALL 1 FILE_FIXED.xml');
+    }
+
 
 }
 
 
+
+
 //public function fix()
 //{
-//    $xmlData2 = file_get_contents('../FIXER/A003.xml');
+//    $xmlData2 = file_get_contents('../FIXER/USMALL 1 FILE.xml');
 //    // Распарсить XML-данные
 //    $xmlNew = new SimpleXMLElement($xmlData2);
 //
@@ -836,3 +693,6 @@ class XmlFileController extends Controller
 //
 //    $xmlNew->asXML('../FIXER/Final_with_cdata.xml');
 //}
+
+
+// /var/www/storage/app/public/uploads/files/1714466274_1 Woman clothes 100.csv_c_.xml

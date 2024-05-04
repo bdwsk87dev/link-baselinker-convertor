@@ -18,7 +18,8 @@ class XmlSettingsStoreV1Request extends FormRequest
     {
         return [
             'xml_id' => 'required',
-            'price_percent' => 'nullable|numeric',
+            'price_percent' => 'nullable',
+            'delivery_price' => 'nullable',
             'description' => 'nullable|string',
             'description_ua' => 'nullable|string',
         ];

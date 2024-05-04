@@ -13,6 +13,7 @@ class XmlSetting extends Model
         'xml_id',
         'allow_update',
         'price_percent',
+        'delivery_price',
         'description',
         'description_ua',
     ];

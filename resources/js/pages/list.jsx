@@ -12,6 +12,7 @@ import { FaTrash } from 'react-icons/fa';
 import { FaLanguage } from 'react-icons/fa';
 import { FaLink } from 'react-icons/fa';
 import { FaEdit } from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
 
 const List = ({xmlFiles}) => {
 
@@ -26,6 +27,15 @@ const List = ({xmlFiles}) => {
 
     const [isModFormOpen, setIsModFormOpen ] = useState(false);
     const [modProductId, setModProductId] = useState(null); // Track the editing product ID
+
+
+    // Table font size
+    const [fontSize, setFontSize] = useState(12);
+
+    const handleFontSizeChange = (event) => {
+        setFontSize(event.target.value); // Оновлюємо розмір шрифту на основі значення ползунка
+    };
+    //
 
     const openEditForm = () => {
         setIsEditFormOpen(true);
@@ -149,6 +159,24 @@ const List = ({xmlFiles}) => {
                  background: #bbbbbb;
                 }
 
+                h1{
+                    font-size:1rem;
+                    font-weight:bold;
+                }
+
+                label{
+                    font-size:0.8rem;
+                }
+
+                .modal-block{
+                    display:flex;
+                    justify-content: space-between;
+                }
+
+                .ml-5 {
+                    margin-left: 1.25rem;
+                }
+
                 .custom-edit-button,
                 .custom-delete-button,
                 .link-button
@@ -172,11 +200,11 @@ const List = ({xmlFiles}) => {
                 }
 
                .modal {
-                  position: relative; /* Изменено на relative */
+                  position: relative;
                   z-index: 9999;
                   background: white;
                   padding: 20px;
-                  border-radius: 8px;
+                  border-radius: 3px;
                   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
                   text-align: center;
                   display: block; /* Отображаем окно */
@@ -191,7 +219,7 @@ const List = ({xmlFiles}) => {
                   border: 1px solid #ccc;
                   border-radius: 4px;
                   box-sizing: border-box;
-                  font-size: 12px;
+                  font-size: 1rem;
                   color:#0d6efd;
                   font-family: Verdana, sans-serif; /* добавляем шрифт Verdana */
                   border:1px solid #16A177;
@@ -204,11 +232,6 @@ const List = ({xmlFiles}) => {
 
                 .pagination li:hover{
                 cursor:pointer;
-                }
-
-                .modal h2 {
-                    font-size: 10px;
-                    margin-bottom: 20px;
                 }
 
                 .modal label {
@@ -225,7 +248,7 @@ const List = ({xmlFiles}) => {
                     margin-bottom: 15px;
                     border: 1px solid #ccc;
                     border-radius: 4px;
-                    font-size: 12px;
+                    font-size: 0.8rem;
                 }
 
                 .modal input[type="checkbox"] {
@@ -242,12 +265,7 @@ const List = ({xmlFiles}) => {
                     background-color: #0056b3;
                 }
 
-                .modal button {
-                    background-color: #ccc;
-                    color: white;
-                    cursor: pointer;
-                    font-size:1rem;
-                }
+
 
                 .modal button:hover {
                     background-color: #999;
@@ -255,18 +273,26 @@ const List = ({xmlFiles}) => {
                 .modal checkbox{
                     margin-left:10px;
                 }
+
                 .modal .updateButton{
-                    position: absolute;
-                    bottom: 60px;
-                    width: 460px;
-                    left: 20px;
+                    min-height: 3rem;
                 }
+
                 .modal .closeButton{
-                    position: absolute;
-                    bottom: 0px;
-                    width: 460px;
-                    left: 20px;
+                    min-height: 3rem;
                 }
+
+                .loading-image
+                {
+                    width:5rem;
+                    height:5rem;
+                }
+
+                .modal .button-confirm{
+                    background-color: #dc3545 !important;
+                }
+
+
 
                 .usageButton{
                     background-color: #292e69ee !important;
@@ -287,6 +313,8 @@ const List = ({xmlFiles}) => {
                     width: 100%;
                     borderCollapse: collapse;
                     margin: 0 auto;
+                    font-size: 12px;
+
                 }
 
                 .per-page{
@@ -307,7 +335,6 @@ const List = ({xmlFiles}) => {
 
                  .file-table thead th {
                     height:60px;
-                    font-size:16px;
                 }
 
                 .page-link{
@@ -355,6 +382,60 @@ const List = ({xmlFiles}) => {
                     overflow-wrap: break-word; /* Якщо ви хочете переносити слова, якщо вони не поміщаються в контейнер */
                 }
 
+
+                .translate-svg-div{
+                    vertical-align: middle;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .translate-svg{
+                    font-size: 36px;
+                    color: #1d6eb3;
+
+                }
+
+               .translate-svg:hover{
+                    cursor:pointer;
+                    font-size: 36px;
+                    color: #0dbcff;
+                }
+
+                .settigns-svg{
+                    font-size: 20px;
+                    color: #228d15;
+                }
+
+                .settigns-svg:hover{
+                    cursor:pointer;
+                    font-size: 22px;
+                    color: #8d1515;
+                }
+
+
+                .link-svg{
+                    font-size: 20px;
+                    color: #228d15;
+                }
+
+                .link-svg:hover{
+                    cursor:pointer;
+                    font-size: 22px;
+                    color: #8d1515;
+                }
+
+                .delete-svg{
+                    font-size: 20px;
+                    color: #cd2626;
+                }
+
+                .delete-svg:hover{
+                    cursor:pointer;
+                    font-size: 22px;
+                    color: #8d1515;
+                }
+
+
                 # Modal
                  `}</style>
             </Head>
@@ -372,6 +453,7 @@ const List = ({xmlFiles}) => {
             <Menu/>
 
             <div className='block' style={{borderTopLeftRadius: '0px', borderTopRightRadius: '0px'}}>
+
                 <div style={{display: 'flex', justifyContent: 'flex-start'}}>
                     <input type="text" placeholder="Search..." onKeyDown={search}/>
                     <select className='per-page' onChange={changePerPage} value={xmlFiles.per_page}>
@@ -384,9 +466,18 @@ const List = ({xmlFiles}) => {
                     </select>
                 </div>
 
+                <input
+                    type="range"
+                    min="10"
+                    max="24"
+                    value={fontSize}
+                    onChange={handleFontSizeChange}
+                    step="1"
+                />
+
                 <br/>
 
-                <table className='file-table'>
+                <table className='file-table' style={{ fontSize: `${fontSize}px` }}>
                     <thead>
                     <tr>
                         <td colSpan="6" style={{textAlign: 'center'}}>
@@ -486,7 +577,8 @@ const List = ({xmlFiles}) => {
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left'
-                        }}>Налаштування
+                        }}> Налаш-<br/>
+                            тування<br/>
                         </th>
 
 
@@ -583,30 +675,31 @@ const List = ({xmlFiles}) => {
                                         </>
                                     )}
 
+                                    <div className="translate-svg-div">
+                                        <FaLanguage
+                                            className="translate-svg"
+                                            onClick={() => handleEdit(xmlFile.id)}
+                                        />
 
-                                    <button className="btn btn-primary edit-button custom-edit-button"
-                                            onClick={() => handleEdit(xmlFile.id)}>
-                                        <FaLanguage style={{fontSize: '24px'}}/>
-                                    </button>
+                                    </div>
+
 
                                 </div>
-
-
                             </td>
 
                             <td style={{border: '1px solid #ddd', textAlign: 'center', width: '100px'}}>
-                                <button style={{padding: '8px', backgroundColor: 'green'}}
-                                        onClick={() => handleMod(xmlFile.id)}
-                                        className="btn btn-primary link-button custom-link-button">
-                                    <FaEdit style={{fontSize: '18px'}}/>
-                                </button>
+                                <FaEdit
+                                    className="settigns-svg"
+                                    onClick={() => handleMod(xmlFile.id)}
+                                />
                             </td>
 
                             <td style={{border: '1px solid #ddd', textAlign: 'center', width: '100px'}}>
-                                <a style={{padding: '8px', backgroundColor: 'green'}} target='_blank'
-                                   className="btn btn-primary link-button custom-link-button"
+                                <a target='_blank'
                                    href={`/api/show/${xmlFile.id}`}>
-                                    <FaLink style={{fontSize: '18px'}}/>
+                                    <FaLink
+                                        className="link-svg"
+                                    />
                                 </a>
                             </td>
 
@@ -617,11 +710,10 @@ const List = ({xmlFiles}) => {
                                 border: '1px solid #ddd',
 
                             }}>
-                                <button style={{padding: '9px'}}
-                                        className="btn btn-danger delete-button custom-delete-button"
-                                        onClick={() => handleDelete(xmlFile.id)}>
-                                    <FaTrash style={{fontSize: '18px'}}/>
-                                </button>
+                                <FaTimes
+                                    className="delete-svg"
+                                    onClick={() => handleDelete(xmlFile.id)}
+                                />
                             </td>
                         </tr>
                     ))}
