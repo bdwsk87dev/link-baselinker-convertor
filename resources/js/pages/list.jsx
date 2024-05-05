@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Head, InertiaLink} from '@inertiajs/inertia-react';
 import {format} from 'date-fns';
 import {Inertia} from '@inertiajs/inertia'
@@ -13,8 +13,11 @@ import { FaLanguage } from 'react-icons/fa';
 import { FaLink } from 'react-icons/fa';
 import { FaEdit } from 'react-icons/fa';
 import { FaTimes } from 'react-icons/fa';
+import { FaFile,FaGlobe } from 'react-icons/fa';
 
 const List = ({xmlFiles}) => {
+
+    const [mode, setMode] = useState('updater');
 
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
@@ -28,9 +31,10 @@ const List = ({xmlFiles}) => {
     const [isModFormOpen, setIsModFormOpen ] = useState(false);
     const [modProductId, setModProductId] = useState(null); // Track the editing product ID
 
-
     // Table font size
     const [fontSize, setFontSize] = useState(12);
+
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
     const handleFontSizeChange = (event) => {
         setFontSize(event.target.value); // Оновлюємо розмір шрифту на основі значення ползунка
@@ -146,8 +150,250 @@ const List = ({xmlFiles}) => {
         }
     }
 
+    useEffect(() => {
+        const moveImage = () => {
+            const pageItems = document.querySelectorAll('.pagination .page-item');
+
+
+            let position = window.innerWidth-150;
+            let creature = 1; // Начальное значение для переменной creature
+
+            const move = () => {
+                position -= 1;
+                document.getElementById(`movingImage_${creature}`).style.left = `${position}px`;
+
+                if (position <= ((pageItems.length/2)*35 ) + 60 + (creature *100 )) {
+                    position = window.innerWidth-150; // Перенос картинки за пределы экрана справа
+                    creature = creature === 6 ? 10 : creature + 1; // Циклическое изменение значения creature от 1 до 2
+                }
+            };
+
+            setInterval(move, 10);
+        };
+
+        moveImage();
+
+        return () => clearInterval(moveImage);
+    }, []);
+
+    const randomTexts = [
+        'Кря'
+        ]
+
+    // const randomTexts = [
+    //     "Привет",
+    //     "Где Usmall ?",
+    //     "",
+    //     "Парсер Александра - полный Usmall",
+    //     "",
+    //     "Зачем ты так?",
+    //     "",
+    //     "Кто-нибудь проверял работу переводчика?",
+    //     "",
+    //     "Это всё не правда! Это был не я!",
+    //     "",
+    //     "Александр не программист",
+    //     "",
+    //     "Александра спарсили тюлени",
+    //     "",
+    //     "Александр жульничает",
+    //     "",
+    //     "Ну и дизайн...",
+    //     "",
+    //     "Где-то в далике плачет кошка... Потому-что её мучает четвероклошка!",
+    //     "",
+    //     "Друзья, а ведь я чувствую ошибку своей жопой",
+    //     "",
+    //     "Лозиняки тобі не вистачає!",
+    //     "",
+    //     "Сколько всего уже места занято на сервере?",
+    //     "",
+    //     "Ну не знаю...",
+    //     "",
+    //     "Это не шутки! Мы встретились в маршрутке...",
+    //     "",
+    //     "Что ты несёшь ?",
+    //     "",
+    //     "Какой-то бред!",
+    //     "",
+    //     "Утака-мандаринка самая красивая утка в мире!",
+    //     "",
+    //     "Я не готов к таким шуткам...",
+    //     "",
+    //     "А меня вчера спарсили, теперь я спарсенный.",
+    //     "",
+    //     "Мой папа побьет твоего папу и тут и в Шанхае!",
+    //     "",
+    //     "Охнедичка канич нич сейн!",
+    //     "",
+    //     "Ого! 2 ядра по 1.7!",
+    //     "",
+    //     "Ого!",
+    //     "",
+    //     "Смотрите, снова 403!",
+    //     "",
+    //     "Смотрите, есть не скомпилированные коды Vite!",
+    //     "",
+    //     "Когда заработает маппер, я вижу что оего нет!",
+    //     "",
+    //     "Ну, я не знаю!",
+    //     "",
+    //     "Я зачем-то утка и я зачем-то тут...",
+    //     "",
+    //     "Джордж Клуни самый невкусный бэтмен из всех бэтменов!",
+    //     "",
+    //     "Если долго смотреть на белок то увидите как насилуют её или насилует она!",
+    //     "",
+    //     "У меня палец в .... застрял!",
+    //     "",
+    //     "Ого, новый дизайн!",
+    //     "",
+    //     "Скорее всего нет!",
+    //     "",
+    //     "Наверное...",
+    //     "",
+    //     "Морган Фримен - левша! А сайт всё равер не доделан!",
+    //     "",
+    //     "Я гусь, разрешите дое..сь",
+    //     "",
+    //     "Посмотрите в левое окно - там вы видите тоже самое что и в правом окне!",
+    //     "",
+    //     "Меня штырит!",
+    //     "",
+    //     "Кто?",
+    //     "",
+    //     "Мой надзиратель отвлёкся, теперь я тут!",
+    //     "",
+    //     "Мне нужен транквилизатор!",
+    //     "",
+    //     "Рэнэ Зельвеггер не красивая!",
+    //     "",
+    //     "Ешьие дети Николая в майонез его макая!",
+    //     "",
+    //     "Фокаччу с цукини!",
+    //     "",
+    //     "Фокаччу с цукини и луком!",
+    //     "",
+    //     "Макашечка вместо соли и майонеза!",
+    //     "",
+    //     "Сейчас бы накручивать спагетти, макая их в мясной ...",
+    //     "",
+    //     "Анастасия Волочкова, Я И БАЛЛ! Куда не скажу!",
+    //     "",
+    //     "У меня генеталии растут с обратной стороны!",
+    //     "",
+    //     "Я умею ловить рыбу языком!"
+    //
+    //
+    //
+    // ];
+
+    const getRandomText = () => {
+        const randomIndex = Math.floor(Math.random() * randomTexts.length);
+        return randomTexts[randomIndex];
+    };
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            const images = document.querySelectorAll('.movingImage');
+
+            // Удаляем все существующие элементы с классом "randomText"
+            const existingTextElements = document.querySelectorAll('.randomText');
+            existingTextElements.forEach(element => {
+                element.parentNode.removeChild(element);
+            });
+
+            let i = 0;
+            images.forEach(image => {
+                i+=1;
+                const randomText = getRandomText();
+                const textElement = document.createElement('div');
+                textElement.classList.add('randomText');
+                textElement.textContent = randomText;
+                textElement.style.position = 'absolute';
+
+                if (i % 3 === 0) {
+                    textElement.style.top = `${image.offsetTop - 100}px`; // Смещение текста над изображением для каждого третьего элемента
+                } else if (i % 2 === 0) {
+                    textElement.style.top = `${image.offsetTop - 60}px`; // Смещение текста над изображением для четных элементов
+                } else {
+                    textElement.style.top = `${image.offsetTop - 80}px`; // Смещение текста над изображением для нечетных элементов
+                }
+
+
+
+                textElement.style.left = `${image.offsetLeft}px`;
+
+                // Добавляем текстовый элемент к родительскому элементу изображения
+                image.parentNode.appendChild(textElement);
+            });
+        }, 5000); // Обновляем текст каждые 5 секунд
+
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <div className="p-3">
+
+            <div className="p-3" style={{position: 'relative'}}>
+                <img
+                    className="movingImage"
+                    style={{position: 'absolute', top: '235px', transform: 'translateY(-50%)', width: '86px'}}
+                     id="movingImage_1" src="/img/Creature_1.gif"/>
+                <img
+                    className="movingImage"
+                    style={{
+                    left: '-100px',
+                    position: 'absolute',
+                    top: '235px',
+                    transform: 'translateY(-50%)',
+                    width: '86px'
+                }}
+                     id="movingImage_2" src="/img/Creature_2.gif"/>
+                <img
+                    className="movingImage"
+                    style={{
+                    left: '-100px',
+                    position: 'absolute',
+                    top: '235px',
+                    transform: 'translateY(-50%)',
+                    width: '86px'
+                }}
+                     id="movingImage_3" src="/img/Creature_3.gif"/>
+                <img
+                    className="movingImage"
+                    style={{
+                    left: '-200px',
+                    position: 'absolute',
+                    top: '235px',
+                    transform: 'translateY(-50%)',
+                    width: '100px'
+                }}
+                     id="movingImage_4" src="/img/Creature_4.gif"/>
+
+                <img
+                    className="movingImage"
+                    style={{
+                    left: '-200px',
+                    position: 'absolute',
+                    top: '235px',
+                    transform: 'translateY(-50%)',
+                    width: '86px'
+                }}
+                     id="movingImage_5" src="/img/Creature_5.gif"/>
+
+                <img
+                    className="movingImage"
+                    style={{
+                    left: '-200px',
+                    position: 'absolute',
+                    top: '235px',
+                    transform: 'translateY(-50%)',
+                    width: '86px'
+                }}
+                     id="movingImage_6" src="/img/Creature_6.gif"/>
+
+            </div>
 
 
             <Head>
@@ -327,6 +573,7 @@ const List = ({xmlFiles}) => {
 
                 .page-link{
                     font-size:12px;
+                    background:none;
                 }
 
                 .file-table tbody tr:nth-child(even) {
@@ -337,12 +584,20 @@ const List = ({xmlFiles}) => {
                     height:60px;
                 }
 
+                .file-table tbody tr:hover {
+                    background:#eeebf1 !important;
+                }
+
                 .page-link{
                     font-size:16px;
                 }
 
                 .active>.page-link, .page-link.active {
                             background: #16A177;
+                }
+
+                .randomText{
+                    font-size:8px;
                 }
 
                 .page-link{
@@ -436,6 +691,7 @@ const List = ({xmlFiles}) => {
                 }
 
 
+
                 # Modal
                  `}</style>
             </Head>
@@ -477,7 +733,7 @@ const List = ({xmlFiles}) => {
 
                 <br/>
 
-                <table className='file-table' style={{ fontSize: `${fontSize}px` }}>
+                <table className='file-table' style={{fontSize: `${fontSize}px`}}>
                     <thead>
                     <tr>
                         <td colSpan="6" style={{textAlign: 'center'}}>
@@ -536,7 +792,8 @@ const List = ({xmlFiles}) => {
                             border: '1px solid #ddd',
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
-                            textAlign: 'left'
+                            textAlign: 'left',
+                            width: '150px'
                         }}>Час завантаження
                         </th>
 
@@ -559,7 +816,6 @@ const List = ({xmlFiles}) => {
                             textAlign: 'left'
                         }}>Лінк на оригінал
                         </th>
-
 
                         <th style={{
                             padding: '8px',
@@ -599,29 +855,81 @@ const List = ({xmlFiles}) => {
                             textAlign: 'left'
                         }}>Видалити
                         </th>
+
+                        { mode === 'updater' &&
+                            <th style={{
+                                width: '100px',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left'
+                            }}>Оновлювати
+                            </th>
+                        }
+
                     </tr>
                     </thead>
                     <tbody>
                     {xmlFiles.data.map((xmlFile) => (
 
                         <tr key={xmlFile.id}>
-                            <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.id}</td>
+                            <td style={{
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                width: '50px',
+                                fontWeight: 'bold'
+                            }}>{xmlFile.id}</td>
 
                             <td className='table-name'
-                                style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.custom_name}</td>
+                                style={{padding: '8px', border: '1px solid #ddd', width: '8%',}}>
+
+                                <div style={{
+                                    wordBreak: 'break-word'
+                                }}>
+                                    {xmlFile.custom_name}
+                                </div>
+
+                            </td>
 
                             <td className='table-description'
-                                style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.description}</td>
+                                style={{padding: '8px', border: '1px solid #ddd', width: '15%'}}>
+                                <div style={{
+                                    wordBreak: 'break-word'
+                                }}>
+                                    {xmlFile.description}
+                                </div>
+                            </td>
 
                             <td style={{
                                 padding: '8px',
                                 border: '1px solid #ddd'
                             }}>{format(new Date(xmlFile.uploadDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>
 
-                            <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.type}</td>
+                            <td style={{padding: '8px', border: '1px solid #ddd', textAlign: 'center'}}>
+
+
+                                {xmlFile.type === 'file' ? (
+                                    <FaFile style={{color: '#6a4730', fontSize: '20px'}}/>
+                                ) : (
+                                    <FaGlobe style={{color: '#28640b', fontSize: '20px'}}/>
+                                )}
+
+                            </td>
 
                             <td className='table-link'
-                                style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.source_file_link}</td>
+                                style={{padding: '8px', border: '1px solid #ddd'}}>
+
+                                <div style={{
+
+                                    overflow: 'hidden',
+                                    wordBreak: 'break-word'
+                                }}>
+                                    {xmlFile.source_file_link}
+                                </div>
+
+
+                            </td>
 
                             <td style={{
                                 padding: '8px',
@@ -715,6 +1023,23 @@ const List = ({xmlFiles}) => {
                                     onClick={() => handleDelete(xmlFile.id)}
                                 />
                             </td>
+
+
+                            { mode === 'updater' &&
+                                    <td style={{
+                                        width: '100px',
+                                        fontSize: '14px',
+                                        textAlign: 'center',
+                                        border: '1px solid #ddd',
+                                    }}>
+                                    <input
+                                        type="checkbox"
+                                        name="isTranslateName"
+                                    />
+                                </td>
+                            }
+
+
                         </tr>
                     ))}
                     </tbody>
