@@ -33,13 +33,14 @@ class XmlTranslator
 
             $dom = new \DOMDocument();
 
-
             $translatedCount = 0;
 
             $xmlFile = XmlFile::where('id', $xmlID)->first();
-            if ($xmlFile) {
+            if ($xmlFile)
+            {
                 $convertedFullPatch = $xmlFile->converted_full_patch;
-            } else {
+            } else
+            {
                 return false;
             }
 
@@ -50,30 +51,61 @@ class XmlTranslator
 
             $totalProducts = count($xml->shop->offer);
 
+            // Массив для хранения уникальных имен товаров
+            $uniqueNames = [];
+
+            $i = 0;
+
             /** Перебор каждого товара в XML */
-            foreach ($xml->shop->offer as $offer) {
+            foreach ($xml->shop->offer as $offer)
+            {
+                $i++;
+                if($i>100000){
+                    break;
+                }
 
                 $translatedCount++;
 
                 // Get current product name
                 $name = (string)$offer->name;
 
-                // Get current product description
-                $description = (string)$offer->description;
+                $uniqueId = $name;
 
-                // Check translation conditions
-                if ($isTranslateName === 'true' && $offer->name_ua == '')
+                if (!isset($uniqueNames[$uniqueId]))
                 {
-                    // Вызов метода перевода для имени товара
-                    $translatedName = $this->deepL->translate(
-                        [
-                            'text' => $name,
-                            null,
-                            'lang' => 'uk'
-                        ],
-                        $apiKey
-                    );
 
+                    // Check translation conditions
+                    if ($isTranslateName === 'true' && $offer->name_ua == '')
+                    {
+                        // Вызов метода перевода для имени товара
+                        $translatedName = $this->deepL->translate(
+                            [
+                                'text' => $name,
+                                null,
+                                'lang' => 'uk'
+                            ],
+                            $apiKey
+                        );
+
+                        // Добавляем название в массив уникальных имен
+                        $uniqueNames[$uniqueId] = $translatedName->text;
+
+                        unset($offer->name_ua);
+
+                        $newName = $offer->addChild('name_ua');
+                        $newNameNode = dom_import_simplexml($newName);
+
+                        $newNameNode->appendChild(
+                            $newNameNode->ownerDocument->createCDATASection
+                            (
+                                $translatedName->text
+                            )
+                        );
+                    }
+
+                }
+                else
+                {
                     unset($offer->name_ua);
 
                     $newName = $offer->addChild('name_ua');
@@ -82,7 +114,7 @@ class XmlTranslator
                     $newNameNode->appendChild(
                         $newNameNode->ownerDocument->createCDATASection
                         (
-                            $translatedName->text
+                            $uniqueNames[$uniqueId]
                         )
                     );
                 }

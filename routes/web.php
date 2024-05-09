@@ -31,6 +31,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/api/upload', [XmlFileController::class, 'upload'])->name('xml.upload');
 
+    // Для того что бы обновить товары мы должны получить id xml и по нему получить тип
+    // парсера и его номер.
+    Route::get('/api/update/{id}', [XmlFileController::class, 'update'])->name('xml.update');
+
     Route::post('/delete/{id}', [XmlFileController::class, 'delete'])->name('xml.delete');
 
     Route::post('/api/deepl/translate', [XmlFileController::class, 'translate'])->name('xml.translate');
@@ -38,8 +42,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/deepl/usage', [XmlFileController::class, 'deeplUsage'])->name('xml.deeplusage');
 
     Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list');
-
-
 
     Route::get('/get-completion-percentage', [XmlFileController::class, 'getCompletionPercentage']);
 
@@ -85,6 +87,9 @@ Route::middleware(['auth'])->group(function () {
             CsvFileController::class, 'upload_from_mapper'
         ])
         ->name('xml.upload');
+
+
+
 
 });
 

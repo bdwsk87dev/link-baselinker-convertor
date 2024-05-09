@@ -78,7 +78,14 @@ class ConverterTypeA
             /** Создаём тег offer */
             $offer = $shop->appendChild($yml->createElement('offer'));
 
-            $offer->setAttribute('available', 'true');
+            if(isset($product->quantity) && (string) $product->quantity == '0')
+            {
+                $offer->setAttribute('available', 'false');
+            }
+            else
+            {
+                $offer->setAttribute('available', 'true');
+            }
 
             /** ID товара */
             if(isset($product->product_id))
@@ -171,9 +178,9 @@ class ConverterTypeA
         }
 
         /** Сохранение YML-файла */
-        $yml->save($uploadFilePath."_c_.xml");
+        $yml->save($uploadFilePath.'_'.time()."_c_.xml");
 
-        return $uploadFilePath."_c_.xml";
+        return $uploadFilePath.'_'.time()."_c_.xml";
     }
 
 
@@ -211,7 +218,6 @@ class ConverterTypeA
 
         return $result;
     }
-
 }
 
 // EXAMPLES

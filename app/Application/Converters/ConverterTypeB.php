@@ -148,8 +148,8 @@ class ConverterTypeB
         }
 
         /** Сохранение YML-файла */
-        $yml->save($uploadFilePath."_c_.xml");
-        return $uploadFilePath."_c_.xml";
+        $yml->save($uploadFilePath.'_'.time()."_c_.xml");
+        return $uploadFilePath.'_'.time()."_c_.xml";
     }
 
     public function lettersToNumbers($input): string

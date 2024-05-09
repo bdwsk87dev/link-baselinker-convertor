@@ -23,13 +23,26 @@ class Uploader
     ): string
     {
         return match ($uploadType) {
-            'file' => $this->uploader->upload(
+            'file' => $this->uploader->upload
+            (
                 $request->file('file')
             ),
-            'link' => $this->linkUploader->upload(
+            'link' => $this->linkUploader->upload
+            (
                 $request->input('remoteFileLink')
             ),
             default => false,
         };
+    }
+
+    public function remoteLinkUpload
+    (
+        $remoteFileLink
+    )
+    {
+        return $this->linkUploader->upload
+        (
+            $remoteFileLink
+        );
     }
 }

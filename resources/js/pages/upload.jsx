@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { Inertia } from '@inertiajs/inertia';
-import { InertiaLink, Head } from '@inertiajs/inertia-react';
+import React, {useState} from 'react';
+import {Inertia} from '@inertiajs/inertia';
+import {InertiaLink, Head} from '@inertiajs/inertia-react';
 import Menu from '../menu/menu.jsx';
 
-const Upload = ({ xmlFiles }) => {
+const Upload = ({xmlFiles}) => {
     const [file, setFile] = useState(null);
     const [customName, setCustomName] = useState('');
     const [description, setDescription] = useState('');
     const [uploadType, setUploadType] = useState('file');
+    const [tld, setTld] = useState('');
     const [xmlType, setXmlType] = useState('typeA');
     const [remoteFileLink, setRemoteFileLink] = useState('');
     const [currency, setCurrency] = useState('PLN');
@@ -36,6 +37,7 @@ const Upload = ({ xmlFiles }) => {
         formData.append('uploadType', uploadType);
         formData.append('xmlType', xmlType);
         formData.append('currency', currency);
+        formData.append('tld', tld);
         Inertia.post('/api/upload', formData);
     };
 
@@ -43,6 +45,20 @@ const Upload = ({ xmlFiles }) => {
         <div>
             <Head>
                 <style>{`
+
+                    body{
+                        font-family: Verdana, sans-serif;
+                        font-size:14px;
+                        height: 100%;
+                        background: #bbbbbb;
+                    }
+
+                    h1{
+                        font-size:1.2rem;
+                        font-weight:bold;
+                    }
+
+
                     .upload-form {
                         display: flex;
                         flex-direction: column;
@@ -86,11 +102,6 @@ const Upload = ({ xmlFiles }) => {
                         margin: 5px 0;
                     }
 
-                    body{
-                        height: 100%;
-                        background: #bbbbbb;
-                    }
-
                     .block
                     {
                         background-color:#ffffff;
@@ -131,108 +142,123 @@ const Upload = ({ xmlFiles }) => {
 
             <Menu/>
 
-            <div className='block' style={{display: 'flex', justifyContent: 'space-between', borderTopLeftRadius: '0px', borderTopRightRadius: '0px'}}>
 
-                <form className="upload-form" encType="multipart/form-data" onSubmit={handleSubmit}>
+            <div className='block' style={{
+                borderTopLeftRadius: '0px',
+                borderTopRightRadius: '0px'
+            }}>
 
-                    <span>Як завантажувати файл</span>
-                    <select
-                        value={uploadType}
-                        onChange={(e) => setUploadType(e.target.value)}
-                    >
-                        <option value="file">Upload file and convert</option>
-                        <option value="link">Convert from link</option>
-                    </select>
+                <h1>Завантажити та сконвертувати файл</h1>
 
-                    <br/>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                }}>
 
-                    <span>Тип оригіналу</span>
-                    <select
-                        className="home-upload-xmltype-select"
-                        value={xmlType}
-                        onChange={(e) => setXmlType(e.target.value)}
-                    >
-                        <option value="typeA">Format A [ BL__Produkty ] [ Поляки ]</option>
-                        <option value="typeB">Format B [ https://api.takedrop.pl/merchant/export ]</option>
-                        <option value="typeC">Format C [ integration-google_product_search ]</option>
-                        <option value="typeD">USMALL формат CSV від Сергія</option>
-                        <option value="typeE">Формат от Андрея 24 04</option>
-                    </select>
+                    <form className="upload-form" encType="multipart/form-data" onSubmit={handleSubmit}>
 
-                    <br/>
+                        <span>Як завантажувати файл</span>
+                        <select
+                            value={uploadType}
+                            onChange={(e) => setUploadType(e.target.value)}
+                        >
+                            <option value="file">Upload file and convert</option>
+                            <option value="link">Convert from link</option>
+                        </select>
 
-                    {uploadType === 'file' ? (
-                        <input type="file" onChange={(e) => setFile(e.target.files[0])}/>
-                    ) : (
+                        <br/>
+
+                        <span>Тип оригіналу</span>
+                        <select
+                            className="home-upload-xmltype-select"
+                            value={xmlType}
+                            onChange={(e) => setXmlType(e.target.value)}
+                        >
+                            <option value="typeA">Format A [ BL__Produkty ] [ Поляки ]</option>
+                            <option value="typeB">Format B [ https://api.takedrop.pl/merchant/export ]</option>
+                            <option value="typeC">Format C [ integration-google_product_search ]</option>
+                            <option value="typeD">USMALL [ формат CSV від Сергія ]</option>
+                            <option value="typeE">Ovot [ похож на формат А только с битыми центами от оригинала]
+                            </option>
+                        </select>
+
+                        <br/>
+
+                        {uploadType === 'file' ? (
+                            <input type="file" onChange={(e) => setFile(e.target.files[0])}/>
+                        ) : (
+                            <input
+                                type="text"
+                                value={remoteFileLink}
+                                onChange={(e) => setRemoteFileLink(e.target.value)}
+                                placeholder="Remote File Link"
+                            />
+                        )}
+
+                        <br/>
+
+                        <label>Валюта</label>
                         <input
                             type="text"
-                            value={remoteFileLink}
-                            onChange={(e) => setRemoteFileLink(e.target.value)}
-                            placeholder="Remote File Link"
+                            value={currency}
+                            onChange={(e) => setCurrency(e.target.value)}
+                            placeholder="Currency"
                         />
-                    )}
 
-                    <br/>
+                        <br/>
 
-                    <label>Валюта</label>
-                    <input
-                        type="text"
-                        value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
-                        placeholder="Currency"
-                    />
+                        <label>TLD</label>
+                        <input
+                            type="text"
+                            value={tld}
+                            onChange={(e) => setTld(e.target.value)}
+                            placeholder="Tld"
+                        />
 
-                    <br/>
+                        <br/>
 
-                    <label>Назва ( лише для таблиці сконвертованих лінків )</label>
-                    <input
-                        type="text"
-                        value={customName}
-                        onChange={(e) => setCustomName(e.target.value)}
-                        placeholder="Custom name"
-                    />
+                        <label>Назва ( лише для таблиці сконвертованих лінків )</label>
+                        <input
+                            type="text"
+                            value={customName}
+                            onChange={(e) => setCustomName(e.target.value)}
+                            placeholder="Custom name"
+                        />
 
-                    <br/>
+                        <br/>
 
-                    <label>Опис ( лише для таблиці сконвертованих лінків )</label>
-                    <input
-                        type="text"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Descripton"
-                    />
+                        <label>Опис ( лише для таблиці сконвертованих лінків )</label>
+                        <input
+                            type="text"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Descripton"
+                        />
 
-                    <br/>
-
-                    <label>Завантажувати зображення на сервер ( Тільки для Олександра опція )</label>
-                    <input className="isUploadImages"
-                        type="checkbox"
-                        checked={isUploadImages}
-                        onChange={(e) => setIsUploadImages(e.target.checked)}
-                        placeholder="Descripton"
-                    />
-
-                    <br/>
+                        <br/>
 
 
-                    <button type="submit">Upload</button>
+                        <button type="submit">Конвертувати</button>
 
 
-                </form>
+                    </form>
 
 
-                <div className="example-container">
-                    {/* Условие отображения изображения в зависимости от выбранного типа XML */}
-                    {xmlType === 'typeA' && (
-                        <img className='example' src="/img/TypeA.png" alt="Type A Image"/>
-                    )}
-                    {xmlType === 'typeB' && (
-                        <img className='example' src="/img/TypeB.png" alt="Type B Image"/>
-                    )}
-                    {xmlType === 'typeC' && (
-                        <img className='example' src="/img/TypeC.png" alt="Type C Image"/>
-                    )}
+                    <div className="example-container">
+                        {/* Условие отображения изображения в зависимости от выбранного типа XML */}
+                        {xmlType === 'typeA' && (
+                            <img className='example' src="/img/TypeA.png" alt="Type A Image"/>
+                        )}
+                        {xmlType === 'typeB' && (
+                            <img className='example' src="/img/TypeB.png" alt="Type B Image"/>
+                        )}
+                        {xmlType === 'typeC' && (
+                            <img className='example' src="/img/TypeC.png" alt="Type C Image"/>
+                        )}
+                    </div>
+
                 </div>
+
 
             </div>
 

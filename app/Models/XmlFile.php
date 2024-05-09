@@ -17,7 +17,11 @@ class XmlFile extends Model
         'converted_full_patch',
         'source_file_link',
         'uploadDateTime',
-        'type'
+        'type',
+        'converter_type',
+        'classic_converter_name',
+        'mapper_converter_id',
+        'TLD'
     ];
 
     public function translatedProducts
@@ -29,5 +33,15 @@ class XmlFile extends Model
             'xmlid',
             'id'
         );
+    }
+
+    public function xmlSettings
+    (
+    ): HasOne
+    {
+        return $this->hasOne(
+            XmlSetting::class,
+            'xml_id',
+            'id');
     }
 }

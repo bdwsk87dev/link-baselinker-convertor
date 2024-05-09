@@ -22,6 +22,7 @@ class XmlSettingsStoreV1Request extends FormRequest
             'delivery_price' => 'nullable',
             'description' => 'nullable|string',
             'description_ua' => 'nullable|string',
+            'allow_update' => 'nullable|bool'
         ];
     }
 

@@ -7,6 +7,7 @@ import Menu from '../menu/menu';
 
 import EditForm from '../forms/EditForm'; // Import the EditForm component
 import ModForm from '../forms/ModForm.jsx'; // Import the ModForm component
+import axios from 'axios';
 
 import { FaTrash } from 'react-icons/fa';
 import { FaLanguage } from 'react-icons/fa';
@@ -14,15 +15,35 @@ import { FaLink } from 'react-icons/fa';
 import { FaEdit } from 'react-icons/fa';
 import { FaTimes } from 'react-icons/fa';
 import { FaFile,FaGlobe } from 'react-icons/fa';
+import { FaSync } from 'react-icons/fa';
+import { FaSpinner } from 'react-icons/fa';
 
-const List = ({xmlFiles}) => {
+const List = ({xmlFiles, data}) => {
 
-    const [mode, setMode] = useState('updater');
+
+    const [mode, setMode] = useState(data.view_mode);
+
+    const handleChangeMode = (e) => {
+        setMode(e.target.value);
+
+        Inertia.visit('/list', {
+            method: 'get',
+            data: {
+                sort_by: sortColumn,
+                order: sortDirection,
+                per_page: perPage,
+                search: searchString,
+                page: page,
+                view_mode: e.target.value
+            },
+            preserveState: true
+        });
+    };
 
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
     const [searchString, ssetSarchString] = useState('');
-    const [perPage, setperPage] = useState(10);
+    const [perPage, setperPage] = useState(25);
     const [page, setPage] = useState(1);
 
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -31,10 +52,84 @@ const List = ({xmlFiles}) => {
     const [isModFormOpen, setIsModFormOpen ] = useState(false);
     const [modProductId, setModProductId] = useState(null); // Track the editing product ID
 
+    const [syncStatus, setSyncStatus] = useState({});
+
+    // Функция для обновления состояния синхронизации
+    const updateSyncStatus = (id, status) => {
+        setSyncStatus(prevState => ({
+            ...prevState,
+            [id]: status,
+        }));
+    };
+
+
+
+    /** Переключение чекбоксов обновления **/
+    const handleUpdateable = (
+        xmlId,
+        currentValue
+    ) => {
+        axios.post('/api/xml/settings/store', {
+            xml_id: xmlId,
+            allow_update: currentValue
+        })
+            .then(response => {
+                Inertia.visit('/list', {
+                    method: 'get',
+                    data: {
+                        per_page: perPage,
+                        sort_by: sortColumn,
+                        order: sortDirection,
+                        search: searchString,
+                        page: page,
+                        view_mode: mode
+                    },
+                    preserveState: true,
+                    replace: true, // Это предотвратит автоматическую прокрутку страницы вверх
+                    preserveScroll: true // Этот параметр сохраняет текущую позицию прокрутки
+                });
+            })
+
+    };
+
+
+
+
+
+
+    const handleSync = (id) => {
+        // Устанавливаем статус синхронизации для текущей записи в true перед отправкой запроса
+        updateSyncStatus(id, true);
+        axios.get(`/api/update/${id}`)
+            .then(response => {
+                // Обработка успешного ответа от сервера
+                const data = response.data;
+                // Устанавливаем статус синхронизации для текущей записи в false после получения ответа
+                updateSyncStatus(id, false);
+            })
+            .catch(error => {
+                // Обработка ошибки при запросе к серверу
+                // Устанавливаем статус синхронизации для текущей записи в false после получения ошибки
+                updateSyncStatus(id, false);
+            });
+        Inertia.visit('/list', {
+            method: 'get',
+            data: {
+                per_page: 1,
+                sort_by: sortColumn,
+                order: sortDirection,
+                search: searchString,
+                page: 1,
+                view_mode: mode
+            },
+            preserveState: true
+        });
+    };
+
+
+
     // Table font size
     const [fontSize, setFontSize] = useState(12);
-
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
     const handleFontSizeChange = (event) => {
         setFontSize(event.target.value); // Оновлюємо розмір шрифту на основі значення ползунка
@@ -56,6 +151,7 @@ const List = ({xmlFiles}) => {
     const closeModForm = () => {
         setIsModFormOpen(false);
     };
+
 
     const handleEdit = (id) => {
         openEditForm(id);
@@ -90,7 +186,8 @@ const List = ({xmlFiles}) => {
                 order,
                 per_page: perPage,
                 search: searchString,
-                page: page
+                page: page,
+                view_mode: mode
             },
             preserveState: true
         });
@@ -98,6 +195,7 @@ const List = ({xmlFiles}) => {
         setSortColumn(column);
         setSortDirection(order);
     };
+
     const changePerPage = (e) => {
         const perPage = e.target.value;
         setperPage(perPage);
@@ -108,7 +206,8 @@ const List = ({xmlFiles}) => {
                 sort_by: sortColumn,
                 order: sortDirection,
                 search: searchString,
-                page: 1
+                page: 1,
+                view_mode: mode
             },
             preserveState: true
         });
@@ -123,7 +222,8 @@ const List = ({xmlFiles}) => {
                 order: sortDirection,
                 per_page: perPage,
                 search: searchString,
-                page: page
+                page: page,
+                view_mode: mode
             },
             preserveState: true
         });
@@ -140,7 +240,8 @@ const List = ({xmlFiles}) => {
                     sort_by: sortColumn,
                     order: sortDirection,
                     per_page: xmlFiles.per_page,
-                    page: 1
+                    page: 1,
+                    view_mode: mode
                 },
                 preserveState: true
             });
@@ -149,6 +250,9 @@ const List = ({xmlFiles}) => {
             ssetSarchString(searchString);
         }
     }
+
+
+
 
     useEffect(() => {
         const moveImage = () => {
@@ -177,7 +281,9 @@ const List = ({xmlFiles}) => {
     }, []);
 
     const randomTexts = [
-        'Кря'
+        'Кря',
+        '',
+        ''
         ]
 
     // const randomTexts = [
@@ -312,6 +418,7 @@ const List = ({xmlFiles}) => {
                 textElement.textContent = randomText;
                 textElement.style.position = 'absolute';
 
+
                 if (i % 3 === 0) {
                     textElement.style.top = `${image.offsetTop - 100}px`; // Смещение текста над изображением для каждого третьего элемента
                 } else if (i % 2 === 0) {
@@ -319,7 +426,6 @@ const List = ({xmlFiles}) => {
                 } else {
                     textElement.style.top = `${image.offsetTop - 80}px`; // Смещение текста над изображением для нечетных элементов
                 }
-
 
 
                 textElement.style.left = `${image.offsetLeft}px`;
@@ -335,7 +441,7 @@ const List = ({xmlFiles}) => {
     return (
         <div className="p-3">
 
-            <div className="p-3" style={{position: 'relative'}}>
+            <div className="p-3" style={{position: 'relative', marginTop: '-30px', display: 'none'}}>
                 <img
                     className="movingImage"
                     style={{position: 'absolute', top: '235px', transform: 'translateY(-50%)', width: '86px'}}
@@ -690,6 +796,12 @@ const List = ({xmlFiles}) => {
                     color: #8d1515;
                 }
 
+                .shync-checkbox{
+                    transform: scale(1.3);
+                    border-color: green;
+
+                }
+
 
 
                 # Modal
@@ -720,6 +832,14 @@ const List = ({xmlFiles}) => {
                         <option value="200">200 per page</option>
                         {/* Добавили опцию для 40 элементов на странице */}
                     </select>
+
+                    <select className='per-page' onChange={handleChangeMode} value={mode}>
+                        <option value="view">Режим перегляду</option>
+                        <option value="sync">Режим оновлення</option>
+                        {/* Добавили опцию для 40 элементов на странице */}
+                    </select>
+
+
                 </div>
 
                 <input
@@ -737,7 +857,7 @@ const List = ({xmlFiles}) => {
                     <thead>
                     <tr>
                         <td colSpan="6" style={{textAlign: 'center'}}>
-                            {xmlFiles.links.length > 0 && (
+                        {xmlFiles.links.length > 0 && (
                                 <ul className="pagination">
                                     {xmlFiles.links.map((link, key) => (
                                         <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
@@ -768,34 +888,69 @@ const List = ({xmlFiles}) => {
                             textAlign: 'left'
                         }}>ID
                         </th>
+
+
                         <th onClick={() => sortBy('custom_name')} style={{
                             cursor: 'pointer',
                             padding: '8px',
                             border: '1px solid #ddd',
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
-                            textAlign: 'left'
+                            textAlign: 'left',
+                            minWidth: '220px'
                         }}>Назва
                         </th>
-                        <th onClick={() => sortBy('description')} style={{
-                            cursor: 'pointer',
-                            padding: '8px',
-                            border: '1px solid #ddd',
-                            backgroundColor: '#f2f2f2',
-                            fontWeight: 'bold',
-                            textAlign: 'left'
-                        }}>Опис
-                        </th>
-                        <th onClick={() => sortBy('uploadDateTime')} style={{
+
+                        <th onClick={() => sortBy('tld')} style={{
                             cursor: 'pointer',
                             padding: '8px',
                             border: '1px solid #ddd',
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
                             textAlign: 'left',
-                            width: '150px'
-                        }}>Час завантаження
+
+                            width: '110px',
+                        }}>TLD
                         </th>
+
+
+                        {/*{ mode === 'view' &&*/}
+                        {/*    <th onClick={() => sortBy('description')} style={{*/}
+                        {/*        cursor: 'pointer',*/}
+                        {/*        padding: '8px',*/}
+                        {/*        border: '1px solid #ddd',*/}
+                        {/*        backgroundColor: '#f2f2f2',*/}
+                        {/*        fontWeight: 'bold',*/}
+                        {/*        textAlign: 'left'*/}
+                        {/*    }}>Опис*/}
+                        {/*    </th>*/}
+                        {/*}*/}
+
+                        {mode === 'view' &&
+                            <th onClick={() => sortBy('uploadDateTime')} style={{
+                                cursor: 'pointer',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left',
+                                width: '50px'
+                            }}>Дата
+                            </th>
+                        }
+
+                        {mode === 'view' &&
+                            <th onClick={() => sortBy('uploadDateTime')} style={{
+                                cursor: 'pointer',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left',
+                                width: '50px'
+                            }}>Час
+                            </th>
+                        }
 
                         <th onClick={() => sortBy('type')} style={{
                             cursor: 'pointer',
@@ -803,7 +958,8 @@ const List = ({xmlFiles}) => {
                             border: '1px solid #ddd',
                             backgroundColor: '#f2f2f2',
                             fontWeight: 'bold',
-                            textAlign: 'left'
+                            textAlign: 'left',
+                            width: '60px'
                         }}>Тип
                         </th>
 
@@ -826,17 +982,18 @@ const List = ({xmlFiles}) => {
                         }}>Переклад
                         </th>
 
-                        <th onClick={() => sortBy('')} style={{
-                            cursor: 'pointer',
-                            padding: '8px',
-                            border: '1px solid #ddd',
-                            backgroundColor: '#f2f2f2',
-                            fontWeight: 'bold',
-                            textAlign: 'left'
-                        }}> Налаш-<br/>
-                            тування<br/>
-                        </th>
-
+                        {mode === 'view' &&
+                            <th onClick={() => sortBy('')} style={{
+                                cursor: 'pointer',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left'
+                            }}> Налаш-<br/>
+                                тування<br/>
+                            </th>
+                        }
 
                         <th style={{
                             padding: '8px',
@@ -846,17 +1003,63 @@ const List = ({xmlFiles}) => {
                             textAlign: 'left'
                         }}>Лінк
                         </th>
-                        <th style={{
-                            width: '100px',
-                            padding: '8px',
-                            border: '1px solid #ddd',
-                            backgroundColor: '#f2f2f2',
-                            fontWeight: 'bold',
-                            textAlign: 'left'
-                        }}>Видалити
-                        </th>
 
-                        { mode === 'updater' &&
+                        {mode === 'view' &&
+                            <th style={{
+                                width: '100px',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left'
+                            }}>Видалити
+                            </th>
+                        }
+
+                        {mode === 'sync' &&
+                            <th style={{
+                                width: '180px',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left'
+                            }}>
+                                Останнє
+                                <br/>
+                                оновлення
+                            </th>
+                        }
+
+                        {mode === 'sync' &&
+                            <th style={{
+                                width: '100px',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left'
+                            }}>
+                                Тип парсеру
+                            </th>
+                        }
+
+                        {mode === 'sync' &&
+                            <th style={{
+                                width: '100px',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left'
+                            }}>
+                                Шаблон
+                                <br/>
+                                оновлення
+                            </th>
+                        }
+
+                        {mode === 'sync' &&
                             <th style={{
                                 width: '100px',
                                 padding: '8px',
@@ -865,6 +1068,18 @@ const List = ({xmlFiles}) => {
                                 fontWeight: 'bold',
                                 textAlign: 'left'
                             }}>Оновлювати
+                            </th>
+                        }
+
+                        {mode === 'sync' &&
+                            <th style={{
+                                width: '100px',
+                                padding: '8px',
+                                border: '1px solid #ddd',
+                                backgroundColor: '#f2f2f2',
+                                fontWeight: 'bold',
+                                textAlign: 'left'
+                            }}>Оновити вручнну
                             </th>
                         }
 
@@ -892,19 +1107,43 @@ const List = ({xmlFiles}) => {
 
                             </td>
 
-                            <td className='table-description'
-                                style={{padding: '8px', border: '1px solid #ddd', width: '15%'}}>
+                            <td className='table-name'
+                                style={{padding: '8px', border: '1px solid #ddd', width: '8%',}}>
                                 <div style={{
                                     wordBreak: 'break-word'
                                 }}>
-                                    {xmlFile.description}
+                                    {xmlFile.TLD}
                                 </div>
                             </td>
 
-                            <td style={{
-                                padding: '8px',
-                                border: '1px solid #ddd'
-                            }}>{format(new Date(xmlFile.uploadDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>
+                            {/*{ mode === 'view' &&*/}
+                            {/*    <td className='table-description'*/}
+                            {/*        style={{padding: '8px', border: '1px solid #ddd', width: '15%'}}>*/}
+                            {/*        <div style={{*/}
+                            {/*            wordBreak: 'break-word'*/}
+                            {/*        }}>*/}
+                            {/*            {xmlFile.description}*/}
+                            {/*        </div>*/}
+                            {/*    </td>*/}
+                            {/*}*/}
+
+                            {mode === 'view' &&
+
+                                <td style={{
+                                    padding: '8px',
+                                    border: '1px solid #ddd'
+                                }}>{format(new Date(xmlFile.uploadDateTime), 'dd.MM')}</td>
+
+                            }
+
+                            {mode === 'view' &&
+
+                                <td style={{
+                                    padding: '8px',
+                                    border: '1px solid #ddd'
+                                }}>{format(new Date(xmlFile.uploadDateTime), 'HH:mm:ss')}</td>
+
+                            }
 
                             <td style={{padding: '8px', border: '1px solid #ddd', textAlign: 'center'}}>
 
@@ -995,12 +1234,14 @@ const List = ({xmlFiles}) => {
                                 </div>
                             </td>
 
-                            <td style={{border: '1px solid #ddd', textAlign: 'center', width: '100px'}}>
-                                <FaEdit
-                                    className="settigns-svg"
-                                    onClick={() => handleMod(xmlFile.id)}
-                                />
-                            </td>
+                            {mode === 'view' &&
+                                <td style={{border: '1px solid #ddd', textAlign: 'center', width: '100px'}}>
+                                    <FaEdit
+                                        className="settigns-svg"
+                                        onClick={() => handleMod(xmlFile.id)}
+                                    />
+                                </td>
+                            }
 
                             <td style={{border: '1px solid #ddd', textAlign: 'center', width: '100px'}}>
                                 <a target='_blank'
@@ -1011,34 +1252,94 @@ const List = ({xmlFiles}) => {
                                 </a>
                             </td>
 
-                            <td style={{
-                                width: '100px',
-                                fontSize: '14px',
-                                textAlign: 'center',
-                                border: '1px solid #ddd',
+                            {mode === 'view' &&
 
-                            }}>
-                                <FaTimes
-                                    className="delete-svg"
-                                    onClick={() => handleDelete(xmlFile.id)}
-                                />
-                            </td>
+                                <td style={{
+                                    width: '100px',
+                                    fontSize: '14px',
+                                    textAlign: 'center',
+                                    border: '1px solid #ddd',
 
-
-                            { mode === 'updater' &&
-                                    <td style={{
-                                        width: '100px',
-                                        fontSize: '14px',
-                                        textAlign: 'center',
-                                        border: '1px solid #ddd',
-                                    }}>
-                                    <input
-                                        type="checkbox"
-                                        name="isTranslateName"
+                                }}>
+                                    <FaTimes
+                                        className="delete-svg"
+                                        onClick={() => handleDelete(xmlFile.id)}
                                     />
                                 </td>
                             }
 
+                            {mode === 'sync' &&
+                                <td style={{
+                                    width: '100px',
+                                    fontSize: '14px',
+                                    textAlign: 'center',
+                                    border: '1px solid #ddd',
+                                }}>
+                                    {xmlFile.new_last_update}
+
+                                </td>
+                            }
+
+                            {mode === 'sync' &&
+                                <td style={{
+                                    width: '100px',
+                                    fontSize: '14px',
+                                    textAlign: 'center',
+                                    border: '1px solid #ddd',
+                                }}>
+                                    {xmlFile.converter_type}
+                                </td>
+                            }
+
+                            {mode === 'sync' &&
+                                <td style={{
+                                    width: '100px',
+                                    fontSize: '14px',
+                                    textAlign: 'center',
+                                    border: '1px solid #ddd',
+                                }}>
+                                    {xmlFile.classic_converter_name}
+                                </td>
+                            }
+                            {mode === 'sync' &&
+                                <td style={{
+                                    width: '100px',
+                                    fontSize: '14px',
+                                    textAlign: 'center',
+                                    border: '1px solid #ddd',
+                                }}>
+                                    <input
+                                        data-xml-id={xmlFile.id}
+                                        className="shync-checkbox"
+                                        type="checkbox"
+                                        name="isTranslateName"
+                                        checked={xmlFile.xml_settings?.allow_update || false}
+                                        onChange={(e) => handleUpdateable
+                                        (
+                                            xmlFile.id,
+                                            e.target.checked
+                                        )
+                                        }
+                                    />
+                                </td>
+                            }
+
+                            {mode === 'sync' &&
+                                <td style={{
+                                    width: '100px',
+                                    fontSize: '14px',
+                                    textAlign: 'center',
+                                    border: '1px solid #ddd',
+                                }}>
+                                    {syncStatus[xmlFile.id] ? (
+                                        // Если статус синхронизации для текущей записи true, показываем иконку загрузки
+                                        <FaSpinner className="link-svg"/>
+                                    ) : (
+                                        // Если статус синхронизации для текущей записи false, показываем иконку синхронизации
+                                        <FaSync onClick={() => handleSync(xmlFile.id)} className="link-svg"/>
+                                    )}
+                                </td>
+                            }
 
                         </tr>
                     ))}
