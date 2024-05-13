@@ -174,7 +174,8 @@ const Upload = ({xmlFiles}) => {
                             value={xmlType}
                             onChange={(e) => setXmlType(e.target.value)}
                         >
-                            <option value="typeA">Format A [ BL__Produkty ] [ Поляки ]</option>
+                            <option value="None">Завантажити та не конвертувати</option>
+                            <option value="typeA">Format A [ Baselinker ]</option>
                             <option value="typeB">Format B [ https://api.takedrop.pl/merchant/export ]</option>
                             <option value="typeC">Format C [ integration-google_product_search ]</option>
                             <option value="typeD">USMALL [ формат CSV від Сергія ]</option>

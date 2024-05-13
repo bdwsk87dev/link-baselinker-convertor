@@ -104,8 +104,15 @@ class ConverterTypeD
             /** ID товара */
             $offer->setAttribute('id', $data[0]);
 
-            /** Available true */
-            $offer->setAttribute('available', 'true');
+            /** Available */
+            if(isset($data[13]) && (string) $data[13] == '0')
+            {
+                $offer->setAttribute('available', 'false');
+            }
+            else
+            {
+                $offer->setAttribute('available', 'true');
+            }
 
             /** Категория товара */
             if(isset($data[9]))
@@ -175,7 +182,8 @@ class ConverterTypeD
             $offer->appendChild($yml->createElement('description_ua', ''));
 
             /** Картинки товара */
-            if(isset($data[11])){
+            if(isset($data[11]))
+            {
                 $pictureNode = $offer->appendChild($yml->createElement('picture'));
                 $pictureNode->appendChild($yml->createCDATASection(trim($data[11])));
             }
@@ -229,7 +237,8 @@ class ConverterTypeD
                 $offer->appendChild($paramElement);
             }
 
-            if (!empty($data[4])) {
+            if (!empty($data[4]))
+            {
                 // Преобразуем JSON-строку в ассоциативный массив
 
                 $jsonString = preg_replace('/,\s*([\]}])/m', '$1', $data[4]);
@@ -249,8 +258,6 @@ class ConverterTypeD
                     }
                 }
             }
-
-
         }
 
         // Определяем, чтобы XML был красиво отформатирован с отступами и переносами строк

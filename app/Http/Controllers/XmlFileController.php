@@ -48,6 +48,61 @@ class XmlFileController extends Controller
 
     }
 
+    public function get
+    (
+        $id
+    ): \Illuminate\Http\JsonResponse
+    {
+        $xmlFile = XmlFile::where('id', $id)->first();
+
+        if ($xmlFile)
+        {
+            return response()->json(
+                [
+                    'status' => 'ok',
+                    'data' => $xmlFile
+                ]);
+        } else
+        {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => 'XmlFile with id ' . $id . ' not found'
+                ], 404);
+        }
+    }
+
+    public function post
+    (
+        $id,
+        Request $request
+    )
+    {
+        // Получаем данные из запроса
+        $formData = $request->all();
+
+        // Находим экземпляр модели XmlFile по идентификатору
+        $xmlFile = XmlFile::find($id);
+
+        // Если запись не найдена, возвращаем ошибку
+        if (!$xmlFile) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'XmlFile with id ' . $id . ' not found'
+            ], 404);
+        }
+
+        // Обновляем атрибуты модели из данных запроса
+        $xmlFile->update($formData);
+
+        // Возвращаем ответ об успешном обновлении
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'XmlFile updated successfully',
+            'xmlFile' => $xmlFile
+        ]);
+    }
+
     public function getTranslatedCount
     (
         $id
@@ -88,7 +143,6 @@ class XmlFileController extends Controller
         Request $request
     ): array
     {
-
         /* Checking xml type */
         $converterType = $request->input('xmlType');
 
@@ -103,14 +157,23 @@ class XmlFileController extends Controller
             $request
         );
 
-        // Конвертируем
-        $convertedFilePatch = $this->globalConvertor->convert
-        (
-            $uploadFilePath,
-            [
-                'currency' => $request->input('currency')
-            ]
-        );
+        /**
+         * Конвертируем необходимым конвертером, если это необходимо.
+         */
+        if ($converterType !== 'None')
+        {
+            $convertedFilePatch = $this->globalConvertor->convert
+            (
+                $uploadFilePath,
+                [
+                    'currency' => $request->input('currency')
+                ]
+            );
+        }
+        else
+        {
+            $convertedFilePatch = $uploadFilePath;
+        }
 
         // Создаём запись в базе данных
         XmlFile::create
@@ -861,35 +924,108 @@ class XmlFileController extends Controller
     }
 
 
+
     public function fixer()
     {
-        $xmlData2 = file_get_contents('../FIXER/USMALL 1 FILE.xml');
+        $xmlData2 = file_get_contents('../FIXER/095.xml');
         // Распарсить XML-данные
         $xmlNew = new SimpleXMLElement($xmlData2);
 
-        /** Перебираем каждый товар в XML */
+        /** Перебор каждого товара в XML */
         foreach ($xmlNew->shop->offer as $offer) {
-            // Проверяем наличие параметра с атрибутом name равным "size"
-            foreach ($offer->param as $param) {
-                if ((string) $param['name'] === 'size') {
-                    // Добавляем значение атрибута size к имени товара
-                    $offer->name = $offer->name . ' ' . $param;
-                    $offer->name_ua = $offer->name_ua . ' ' . $param;
-                    break; // Прерываем цикл, так как нашли нужный параметр
-                }
-            }
-        }
+            $descriptionToRemove = '<strong>Доставка з магазину США.</strong><div>Вартість доставки від 278 грн в Україну залежно від розміру та ваги товару.</div><div>Термін доставки: 7-10 днів.</div>';
 
-        // Сохраняем измененный XML в новый файл
-        $xmlNew->asXML('../FIXER/USMALL 1 FILE_FIXED.xml');
+
+            $existingDescription = $offer->description;
+            // Перевірити, чи існує CDATA-блок
+            if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>')) {
+                // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
+                $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
+                $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
+            }
+
+            $newText = str_replace($descriptionToRemove, '', $offer->description);
+
+            unset(
+                $offer->description
+            );
+
+            $newName = $offer->addChild('description');
+            $newCData = dom_import_simplexml($newName);
+            $newCData->appendChild
+            (
+                $newCData->ownerDocument->createCDATASection
+                (
+                    trim($newText)
+                )
+            );
+
+
+
+            // ua
+
+
+            $newText = str_replace($descriptionToRemove, '', $offer->description_ua);
+
+            $existingDescription = $offer->description_ua;
+            // Перевірити, чи існує CDATA-блок
+            if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>')) {
+                // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
+                $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
+                $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
+            }
+
+            unset(
+                $offer->description_ua
+            );
+
+            $newName = $offer->addChild('description_ua');
+            $newCData = dom_import_simplexml($newName);
+            $newCData->appendChild
+            (
+                $newCData->ownerDocument->createCDATASection
+                (
+                    trim($newText)
+                )
+            );
+
+
+
+        }
+        $xmlNew->asXML('../FIXER/95.xml');
+        echo '1';
     }
 
-
+    // /var/www/storage/app/public/uploads/files/USMALL 1 FILE_FIXED.xml
 }
 
 
 // Формат А доступность товара по квантити
 // Формат D по доп полю от сергея
+
+
+//    public function fixer()
+//    {
+//        $xmlData2 = file_get_contents('../FIXER/95.xml');
+//        // Распарсить XML-данные
+//        $xmlNew = new SimpleXMLElement($xmlData2);
+//
+//        /** Перебираем каждый товар в XML */
+//        foreach ($xmlNew->shop->offer as $offer) {
+//            // Проверяем наличие параметра с атрибутом name равным "size"
+//            foreach ($offer->param as $param) {
+//                if ((string) $param['name'] === 'size') {
+//                    // Добавляем значение атрибута size к имени товара
+//                    $offer->name = $offer->name . ' ' . $param;
+//                    $offer->name_ua = $offer->name_ua . ' ' . $param;
+//                    break; // Прерываем цикл, так как нашли нужный параметр
+//                }
+//            }
+//        }
+//
+//        // Сохраняем измененный XML в новый файл
+//        $xmlNew->asXML('../FIXER/USMALL 1 FILE_FIXED.xml');
+//    }
 
 
 

@@ -35,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
     // парсера и его номер.
     Route::get('/api/update/{id}', [XmlFileController::class, 'update'])->name('xml.update');
 
+    Route::get('/api/xml/get/{id}', [XmlFileController::class, 'get'])->name('xml.get');
+    Route::post('/api/xml/get/{id}', [XmlFileController::class, 'post'])->name('xml.post');
+
     Route::post('/delete/{id}', [XmlFileController::class, 'delete'])->name('xml.delete');
 
     Route::post('/api/deepl/translate', [XmlFileController::class, 'translate'])->name('xml.translate');

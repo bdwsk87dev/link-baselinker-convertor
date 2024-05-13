@@ -5,8 +5,9 @@ import {Inertia} from '@inertiajs/inertia'
 import {Helmet} from 'react-helmet';
 import Menu from '../menu/menu';
 
-import EditForm from '../forms/EditForm'; // Import the EditForm component
-import ModForm from '../forms/ModForm.jsx'; // Import the ModForm component
+import EditForm from '../forms/EditForm';
+import ModForm from '../forms/ModForm.jsx';
+import XmlEditForm from '../forms/XmlEditForm.jsx';
 import axios from 'axios';
 
 import { FaTrash } from 'react-icons/fa';
@@ -19,7 +20,6 @@ import { FaSync } from 'react-icons/fa';
 import { FaSpinner } from 'react-icons/fa';
 
 const List = ({xmlFiles, data}) => {
-
 
     const [mode, setMode] = useState(data.view_mode);
 
@@ -40,17 +40,44 @@ const List = ({xmlFiles, data}) => {
         });
     };
 
+
+    const updateTable = ()=>{
+        Inertia.visit('/list', {
+            method: 'get',
+            data: {
+                sort_by: sortColumn,
+                order: sortDirection,
+                per_page: perPage,
+                search: searchString,
+                page: page,
+                view_mode: mode
+            },
+            preserveState: true
+        });
+    }
+
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
     const [searchString, ssetSarchString] = useState('');
     const [perPage, setperPage] = useState(25);
     const [page, setPage] = useState(1);
 
+
+
+
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
     const [editingProductId, setEditingProductId] = useState(null); // Track the editing product ID
 
     const [isModFormOpen, setIsModFormOpen ] = useState(false);
     const [modProductId, setModProductId] = useState(null); // Track the editing product ID
+
+    // Форма редактирования записи
+    const [isXmlEditFormOpen, setIsXmlEditFormOpen] = useState(false);
+    const [editXmlId, setEditXmlId] = useState(null);
+
+
+
+
 
     const [syncStatus, setSyncStatus] = useState({});
 
@@ -61,6 +88,8 @@ const List = ({xmlFiles, data}) => {
             [id]: status,
         }));
     };
+
+
 
 
 
@@ -91,10 +120,6 @@ const List = ({xmlFiles, data}) => {
             })
 
     };
-
-
-
-
 
 
     const handleSync = (id) => {
@@ -136,6 +161,37 @@ const List = ({xmlFiles, data}) => {
     };
     //
 
+
+
+    // Обработчик двойного клика на <tr>
+    const handleDoubleClick = (xmlFileId) =>
+    {
+        handleEditXmlForm(xmlFileId);
+    };
+
+
+    // // // // // // // //
+
+    const handleEdit = (id) =>
+    {
+        openEditForm(id);
+        setEditingProductId(id);
+    };
+
+    const handleMod = (id) =>
+    {
+        openModForm(id);
+        setModProductId(id);
+    };
+
+    const handleEditXmlForm = (id) =>
+    {
+        openEditXmlForm();
+        setEditXmlId(id);
+    };
+
+    // // // // // // // //
+
     const openEditForm = () => {
         setIsEditFormOpen(true);
     };
@@ -143,6 +199,8 @@ const List = ({xmlFiles, data}) => {
     const closeEditForm = () => {
         setIsEditFormOpen(false);
     };
+
+    //
 
     const openModForm = () => {
         setIsModFormOpen(true);
@@ -152,16 +210,22 @@ const List = ({xmlFiles, data}) => {
         setIsModFormOpen(false);
     };
 
+    //
 
-    const handleEdit = (id) => {
-        openEditForm(id);
-        setEditingProductId(id); // Set the editing product ID when the "Edit" button is clicked
+    const openEditXmlForm = () => {
+        setIsXmlEditFormOpen(true);
     };
 
-    const handleMod = (id) => {
-        openModForm(id);
-        setModProductId(id); // Set the editing product ID when the "Edit" button is clicked
+    const closeEditXmlForm = () => {
+        setIsXmlEditFormOpen(false);
+        updateTable();
     };
+
+
+
+
+
+
 
     const handleDelete = (id) => {
         if (window.confirm('Are you sure you want to delete this file?')) {
@@ -1088,7 +1152,11 @@ const List = ({xmlFiles, data}) => {
                     <tbody>
                     {xmlFiles.data.map((xmlFile) => (
 
-                        <tr key={xmlFile.id}>
+                        <tr
+                            key={xmlFile.id}
+                            onDoubleClick={() => handleDoubleClick(xmlFile.id)}
+                        >
+
                             <td style={{
                                 padding: '8px',
                                 border: '1px solid #ddd',
@@ -1375,6 +1443,10 @@ const List = ({xmlFiles, data}) => {
             {isEditFormOpen && <EditForm productId={editingProductId} onClose={closeEditForm}/>}
 
             {isModFormOpen && <ModForm xml_id={modProductId} onClose={closeModForm}/>}
+
+            {isXmlEditFormOpen && <XmlEditForm xml_id={editXmlId} onClose={closeEditXmlForm}/>}
+
+            setIsXmlEditFormOpen
 
         </div>
     );
