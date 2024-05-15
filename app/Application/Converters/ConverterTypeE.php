@@ -7,7 +7,7 @@ use DOMException;
 use Exception;
 use SimpleXMLElement;
 
-class ConverterTypeE
+class ConverterTypeE implements ConverterInterface
 {
     public function __construct(){
     }
@@ -19,7 +19,7 @@ class ConverterTypeE
     public function convert(
         $uploadFilePath,
         $params
-    ){
+    ):string{
 
         $xmlData = file_get_contents($uploadFilePath);
 

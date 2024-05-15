@@ -48,9 +48,6 @@ const Menu = () => {
                             padding-left: 15px;
                             border:1px solid #16A177;
                         }
-
-
-
                     `}
                 </style>
             </Head>
@@ -60,7 +57,8 @@ const Menu = () => {
             <a href="/mapper/xml">Mapper xml</a>
             <a href="/mapper/csv">Mapper csv</a>
             <a href="/list">Список лінків</a>
-            <a href="/deepl">Deepl</a>
+            <a href="/list?view_mode=sync">Режим оновлення</a>
+            <a href="/update-hostory">Історія оновлень</a>
             <a href="/logout">Вийти</a>
             {/* Добавьте другие ссылки, если нужно */}
         </div>

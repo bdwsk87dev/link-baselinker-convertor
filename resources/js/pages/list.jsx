@@ -22,6 +22,12 @@ import { FaSpinner } from 'react-icons/fa';
 const List = ({xmlFiles, data}) => {
 
     const [mode, setMode] = useState(data.view_mode);
+    // Загальна кількість записів
+    const [totalRecords, SetRecordsCount] = useState(data.total_records);
+    // Загальна кількість завантажених файлів
+    const [totalFiles, SetTotalFiles] = useState(data.total_files);
+    // Загальна кількість доданих лінків
+    const [totalLinks, SetTotalLinks] = useState(data.total_links);
 
     const handleChangeMode = (e) => {
         setMode(e.target.value);
@@ -220,12 +226,6 @@ const List = ({xmlFiles, data}) => {
         setIsXmlEditFormOpen(false);
         updateTable();
     };
-
-
-
-
-
-
 
     const handleDelete = (id) => {
         if (window.confirm('Are you sure you want to delete this file?')) {
@@ -505,7 +505,7 @@ const List = ({xmlFiles, data}) => {
     return (
         <div className="p-3">
 
-            <div className="p-3" style={{position: 'relative', marginTop: '-30px', display: 'none'}}>
+            <div className="p-3" style={{position: 'relative', marginTop: '-30px'}}>
                 <img
                     className="movingImage"
                     style={{position: 'absolute', top: '235px', transform: 'translateY(-50%)', width: '86px'}}
@@ -775,10 +775,6 @@ const List = ({xmlFiles, data}) => {
                     border-radius:0px !important;
                 }
 
-                .translate-modal-title{
-                    font-size:1.5rem;
-                }
-
                 .elements-block{
                     display:flex;
                 }
@@ -865,8 +861,29 @@ const List = ({xmlFiles, data}) => {
                     border-color: green;
 
                 }
+                .submenu-block{
+                    font-size: 14px;
+                    text-align: center;
+                    border: 1px solid #25971c;
+                    color: #0d6efd;
+                    margin-left: 15px;
+                    Height: 48px;
+                    min-width: 123px;
+                    margin-top:5px;
+                    margin-bottom:5px;
+                     display: flex;
+                     align-items: center;
+                         justify-content: center;
+                }
 
+                .statistic-table td{
+                    padding-left: 5px;
+                    padding-right: 5px;
+                }
 
+                .sub-menu input, .sub-menu select, .sub-menu div{
+                    border-radius:3px !important;
+                }
 
                 # Modal
                  `}</style>
@@ -886,7 +903,8 @@ const List = ({xmlFiles, data}) => {
 
             <div className='block' style={{borderTopLeftRadius: '0px', borderTopRightRadius: '0px'}}>
 
-                <div style={{display: 'flex', justifyContent: 'flex-start'}}>
+                <div className='sub-menu' style={{display: 'flex', justifyContent: 'flex-start'}}>
+
                     <input type="text" placeholder="Search..." onKeyDown={search}/>
                     <select className='per-page' onChange={changePerPage} value={xmlFiles.per_page}>
                         <option value="10">10 per page</option>
@@ -902,6 +920,22 @@ const List = ({xmlFiles, data}) => {
                         <option value="sync">Режим оновлення</option>
                         {/* Добавили опцию для 40 элементов на странице */}
                     </select>
+
+                    <div className="submenu-block">
+                        Записів: {totalRecords}
+                    </div>
+
+                    <div className="submenu-block">
+                        Файлів: {totalFiles}
+                    </div>
+
+                    <div className="submenu-block">
+                        Лінків: {totalLinks}
+                    </div>
+
+
+
+
 
 
                 </div>
@@ -921,7 +955,7 @@ const List = ({xmlFiles, data}) => {
                     <thead>
                     <tr>
                         <td colSpan="6" style={{textAlign: 'center'}}>
-                        {xmlFiles.links.length > 0 && (
+                            {xmlFiles.links.length > 0 && (
                                 <ul className="pagination">
                                     {xmlFiles.links.map((link, key) => (
                                         <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>

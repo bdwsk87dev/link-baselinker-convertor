@@ -2,14 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Application\Converters\ConverterTypeA;
-use App\Application\Converters\ConverterTypeB;
-use App\Application\Converters\ConverterTypeC;
-use App\Application\Converters\ConverterTypeD;
-use App\Application\Converters\ConverterTypeE;
+use App\Application\Converters\ConverterInterface;
 use App\Application\FileManager\FileReaders\XmlStructReader;
-use App\Application\FileManager\LinkUploader;
-use App\Application\FileManager\FileUploader;
 use App\Application\FileManager\Uploader;
 use App\Application\Translations\XmlTranslator;
 use App\Models\TranslatedProduct;
@@ -19,33 +13,27 @@ use App\Application\Translations\DeepLApplication;
 use App\Models\XmlSetting;
 use DeepL\DeepLException;
 use DOMDocument;
-use DOMElement;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Response;
 use Inertia\ResponseFactory;
 use SimpleXMLElement;
 use XMLReader;
-use function PHPUnit\Framework\never;
-use Illuminate\Support\Facades\Response as FacadeResponse;
+use App\Factories\ConverterFactory;
 
 class XmlFileController extends Controller
 {
-    private ConverterTypeA|ConverterTypeB|ConverterTypeC|ConverterTypeD|ConverterTypeE $globalConvertor;
+    private ?ConverterInterface $globalConvertor = null;
+    private ConverterFactory $converterFactory;
 
     public function  __construct(
         private readonly Uploader         $uploader,
-        private readonly ConverterTypeA   $converterTypeA,
-        private readonly ConverterTypeB   $converterTypeB,
-        private readonly ConverterTypeC   $converterTypeC,
-        private readonly ConverterTypeD   $converterTypeD,
-        private readonly ConverterTypeE   $converterTypeE,
         private readonly DeepLApplication $deepLApplication,
         private readonly XmlTranslator    $xmlTranslator,
-        private readonly XmlStructReader  $xmlStructReader
+        private readonly XmlStructReader  $xmlStructReader,
+        ConverterFactory                  $converterFactory
     ){
-
+        $this->converterFactory = $converterFactory;
     }
 
     public function get
@@ -119,22 +107,10 @@ class XmlFileController extends Controller
         $converterType
     ): void
     {
-        switch ($converterType) {
-            case 'typeA':
-                $this->globalConvertor = $this->converterTypeA;
-                break;
-            case 'typeB':
-                $this->globalConvertor = $this->converterTypeB;
-                break;
-            case 'typeC':
-                $this->globalConvertor = $this->converterTypeC;
-                break;
-            case 'typeD':
-                $this->globalConvertor = $this->converterTypeD;
-                break;
-            case 'typeE':
-                $this->globalConvertor = $this->converterTypeE;
-                break;
+        if ($converterType === 'None') {
+            $this->globalConvertor = null;
+        } else {
+            $this->globalConvertor = $this->converterFactory->createConverter($converterType);
         }
     }
 
@@ -143,13 +119,10 @@ class XmlFileController extends Controller
         Request $request
     ): array
     {
-        /* Checking xml type */
         $converterType = $request->input('xmlType');
+        $uploadType = $request->input('uploadType');
 
         $this->prepareConvertor($converterType);
-
-        /* Checking upload type */
-        $uploadType = $request->input('uploadType');
 
         $uploadFilePath = $this->uploader->upload
         (
@@ -160,7 +133,8 @@ class XmlFileController extends Controller
         /**
          * Конвертируем необходимым конвертером, если это необходимо.
          */
-        if ($converterType !== 'None')
+
+        if ($this->globalConvertor !== null)
         {
             $convertedFilePatch = $this->globalConvertor->convert
             (
@@ -169,13 +143,14 @@ class XmlFileController extends Controller
                     'currency' => $request->input('currency')
                 ]
             );
-        }
-        else
+        } else
         {
             $convertedFilePatch = $uploadFilePath;
         }
 
-        // Создаём запись в базе данных
+        /**
+         * Создаём запись в базе данных
+         */
         XmlFile::create
         (
             [
@@ -209,8 +184,9 @@ class XmlFileController extends Controller
          * Цену
          * Наличие
          *
-         * Этот обновлятор, так сказать, обновляет цену и наличие обновляет только по принцыпу
-         * есть ли товар в новом файле
+         * обновляет цену и наличие
+         * Наличие -> есть ли товар в новом файле
+         * А в каждом формате еще есть своя проверка, в наличии ли товар. Например от сергея это отдельное поле
          *
          * Также он добавляет новые товары, они естественно без перевода. По этому после новых товаров
          * нужно обновить таблицу переведеннных товаров, где общее количество товаров должно соответственно
@@ -221,18 +197,38 @@ class XmlFileController extends Controller
          *
          * Usmall еще дополнительно проверяет поле во время конвертации.
          * Converter A смотрит на Quantity 0
+         *
+         * В новом документе это $newOffer['available'] == 'false' будет после конвертации перед этим методом!!!
          */
 
         try
         {
 
+            // Для добавления новых товаров необходимо знать валюту. Её мы получим со старого документа
             $globalCurrency = 'PLN';
+            // Количество новых товаров, тех которых не было в старом документе. Нужно для отчётности.
             $newProductsCount = 0;
+            // Товары, которые стали не доступными. У которых в новом документе available стал false
             $notAvailableCount = 0;
+            // Количество старых товаров, у которых была изменена цена. Нужно для отчётности.
             $updateProductsCount = 0;
+            // Количество изменённых цен.
+            $priceUpdates = 0;
+
+            // В случае ошибки, необходимо для отчетности записать её в базу данных
             $errorText = null;
+            // Флаг для определения была ли ошибка при обновлении документа. Например документ не доступен...
             $hasError = false;
+            // Номер строки, в которой, гепотетически произошла ошибка
             $errorLine = '';
+
+            $updateId = 1;
+
+            $backupFilePath = '';
+
+            /**
+             * Получаем путь к старому xml
+             */
 
             /** Отримаємо запис з бази данних поточного xml */
             $query = XmlFile::query()
@@ -247,13 +243,25 @@ class XmlFileController extends Controller
 
             $xml = $query->where('id', '=', $id)->first();
 
+            /** Проверяем, существует ли запись для данного xmlId в таблице историй обновлений */
+            $lastUpdate = UpdateHistory::where('xmlId', $xml->id)->latest()->first();
+
+            if ($lastUpdate)
+            {
+                /** Если запись существует, увеличиваем update_id на 1 */
+                $updateId = $lastUpdate->update_id + 1;
+            } else {
+                /** Если записи не существует, устанавливаем update_id равным 1 */
+                $updateId = 1;
+            }
+
             /** Получаем путь к старому файлу, вернее его имя */
             $oldFilePath = basename($xml->converted_full_patch);
 
             /** Получаем полный путь к старому файлу */
             $oldFilePathFull = storage_path('app/public/uploads/files/' . $oldFilePath);
 
-            /** Проверяем существование файла и еслт что, пробуем найти по старому пути.*/
+            /** Проверяем существование файла и если что, пробуем найти по старому пути.*/
             if (!file_exists($oldFilePathFull))
             {
                 /** Если файл не существует, меняем путь */
@@ -267,9 +275,11 @@ class XmlFileController extends Controller
             );
 
             /**
+             * Получаем валюту из старого файла
              * Нужно получить валюту старого файла.
              * Сделать мы это сможем только путём нахождение валюты в первом товаре (offer-е)) в xml
              */
+
             $oldXmlContents = file_get_contents
             (
                 $oldFilePathFull
@@ -277,7 +287,8 @@ class XmlFileController extends Controller
 
             $oldXmlDoom = new SimpleXMLElement($oldXmlContents);
 
-            foreach ($oldXmlDoom->shop->offer as $offer) {
+            foreach ($oldXmlDoom->shop->offer as $offer)
+            {
                 if (isset($offer->currencyId)) {
                     $globalCurrency = (string)$offer->currencyId;
                     break;
@@ -289,92 +300,156 @@ class XmlFileController extends Controller
              * а также старый переносим в папку резервов старых xml
              */
 
-            $uploadFilePath = $this->uploader->remoteLinkUpload
-            (
-                //'http://diaspar.phpsoft.pro/unibot/actions.php?action=export&table=usmall_products&file=1'
-                $xml->source_file_link
-            );
+            try {
+                $uploadFilePath = $this->uploader->remoteLinkUpload
+                (
+                    $xml->source_file_link
+                );
+            } catch (\Exception $e) {
+                throw new \Exception('Error reading file: ' . $e->getMessage());
+            }
 
-            /** Конвертируем новвый файл, согласно актуальному конвертеру */
-            $convertedFilePatch = $this->globalConvertor->convert
-            (
-                $uploadFilePath,
-                [
-                    'currency' => $globalCurrency
-                ]
-            );
+            /**
+             * Конвертируем необходимым конвертером, если это необходимо.
+             */
+
+            // Конвертируем, если это необходимо
+            if ($this->globalConvertor !== null)
+            {
+                $convertedFilePatch = $this->globalConvertor->convert
+                (
+                    $uploadFilePath,
+                    [
+                        'currency' => $globalCurrency
+                    ]
+                );
+            } else
+            {
+                $convertedFilePatch = $uploadFilePath;
+            }
 
             /** Синхронизуем xml файлики */
             // Парсим старый XML
             $oldXml = simplexml_load_file($xml->converted_full_patch);
 
-            // Парсим новый XML
+            /** Парсим новый XML */
             $newXml = simplexml_load_file($convertedFilePatch);
 
-            // Проходим по каждому offer в новом XML
-            foreach ($newXml->shop->offer as $newOffer) {
+            /** Проходим по каждому offer в новом XML */
+            foreach ($newXml->shop->offer as $newOffer)
+            {
                 $offerFound = false;
 
-                // Проходим по каждому offer в старом XML
-                foreach ($oldXml->shop->offer as $oldOffer) {
+                /** Проходим по каждому offer в старом XML **/
+                foreach ($oldXml->shop->offer as $oldOffer)
+                {
+                    /** Если найден offer с таким же id, обновляем цену и доступность */
+                    if ((string)$newOffer->attributes()->id == (string)$oldOffer->attributes()->id)
+                    {
 
-                    // Если найден offer с таким же id, обновляем цену и доступность
-                    if ((string)$newOffer->attributes()->id == (string)$oldOffer->attributes()->id) {
-                        $oldOffer->price = $newOffer->price; // Обновляем цену
+                        if((string) $oldOffer->price !== (string) $newOffer->price)
+                        {
+                            // Обновляем цену
+                            $oldOffer->price = $newOffer->price;
+                            $priceUpdates++;
+                        }
 
                         // Обновляем доступность
                         $oldOffer['available'] = (string)$newOffer['available'];
 
                         if((string)$newOffer['available'] == 'false')
                         {
+                            /** Товары, которые стали не доступными. У которых в новом документе available стал false */
                             $notAvailableCount++;
                         }
 
+                        /** Количество старых товаров, которые были синхронизированы, так сказать... */
                         $updateProductsCount++;
+
                         $offerFound = true;
                         break;
                     }
                 }
 
-
-                // Если offer из нового XML не найден в старом, копируем его в старый XML
-                if (!$offerFound) {
+                /** Если offer из нового XML не найден в старом, копируем его в старый XML **/
+                if (!$offerFound)
+                {
                     $newOfferToAdd = $oldXml->shop->addChild('offer');
-                    foreach ($newOffer->attributes() as $key => $value) {
+
+                    /** Копируем параметры тега offer */
+                    foreach ($newOffer->attributes() as $key => $value)
+                    {
                         $newOfferToAdd->addAttribute($key, $value);
                     }
 
-                    // Добавляем внутренние теги
-                    foreach ($newOffer->children() as $child) {
-                        $newOfferToAdd->addChild($child->getName(), (string)$child);
+                    /** Копируем внутренние теги вместе с их атрибутами */
+                    foreach ($newOffer->children() as $child)
+                    {
+                        $newChild = $newOfferToAdd->addChild($child->getName(), (string)$child);
+
+                        /** Копируем атрибуты внутреннего тега */
+                        foreach ($child->attributes() as $attrKey => $attrValue)
+                        {
+                            $newChild->addAttribute($attrKey, $attrValue);
+                        }
                     }
 
+                    /** Количество новых товаров, тех которых не было в старом документе. Нужно для отчётности. */
                     $newProductsCount++;
                 }
             }
 
-            // Проходим по каждому offer в старом XML
-            foreach ($oldXml->shop->offer as $oldOffer) {
-                $offerFound = false;
+            /**
+             * Теперь проверяем, если товар был в старом xml но пропал в новом - он уже не доступен! Available = false!
+             */
 
+            /** Проходим по каждому offer в старом XML */
+            foreach ($oldXml->shop->offer as $oldOffer)
+            {
                 $found = false;
-
-                // Проходим по каждому offer в новом XML
-                foreach ($newXml->shop->offer as $newOffer) {
-                    // Если найден offer с таким же id, товар все еще доступен
+                /** Проходим по каждому offer в новом XML */
+                foreach ($newXml->shop->offer as $newOffer)
+                {
+                    /** Если найден offer с таким же id, товар все еще доступен */
                     if ((string)$newOffer->attributes()->id == (string)$oldOffer->attributes()->id) {
                         $found = true;
                         break;
                     }
                 }
 
-                if (!$found) {
+                if (!$found)
+                {
+                    /** Устанавливаем атрибут в false так как в новом файле данного товара нет*/
                     $oldOffer['available'] = false;
+
+                    /** Товары, которые стали не доступными. У которых в новом документе available стал false */
                     $notAvailableCount++;
                 }
             }
 
-            // Сохраняем обновленный старый XML
+            /** Получаем имя файла без пути */
+            $baseFileName = basename($xml->converted_full_patch);
+
+            /** Определяем путь к новой директории */
+            $backupDir = storage_path('app/public/uploads/update_files/' . $xml->id);
+
+            /** Создаем директорию, если она не существует **/
+            if (!file_exists($backupDir))
+            {
+                mkdir($backupDir, 0777, true);
+            }
+
+            /** Определяем новое имя файла с префиксом _id и updateId */
+            $backupFileName = $baseFileName . '_update_' . $updateId . '.xml';
+            $backupFilePath = $backupDir . '/' . $backupFileName;
+
+            /** Копируем старый файл в новую директорию с новым именем */
+            if (!copy($xml->converted_full_patch, $backupFilePath))
+            {
+                throw new \Exception("Failed to copy $xml->converted_full_patch to $backupFilePath");
+            }
+
+            /** Сохраняем обновленный старый XML */
             $oldXml->asXML($xml->converted_full_patch);
 
         } catch (\Exception $e)
@@ -384,62 +459,70 @@ class XmlFileController extends Controller
             $errorLine = $e->getLine();
         }
 
-        if(!$hasError)
+        if (!$hasError)
         {
-            // Нужно поменять общее количество товаров в таблице translated_products что бы было понятно
-            // что после апдейта, нужно допереводить товары
+            /**
+             * Нужно поменять общее количество товаров в таблице translated_products что бы было понятно
+             * что после апдейта, нужно допереводить новые товары
+             */
+
             $translatedProduct = TranslatedProduct::query();
             $translatedProduct = $translatedProduct->where('xmlid', '=', $id)->first();
 
-            if ($translatedProduct !== null && $newProductsCount !== null) {
+            if ($translatedProduct !== null && $newProductsCount !== null)
+            {
                 $translatedProduct->total += $newProductsCount;
                 $translatedProduct->save();
             }
 
-            $xml->new_last_update = now(); // Устанавливаем текущую дату и время
-            $xml->save(); // Сохраняем изменения в объекте XML
+            /** Устанавливаем текущую дату и время в таблице xml-лок */
+            $xml->new_last_update = now();
+
+            /** Сохраняем изменения в объекте XML */
+            $xml->save();
+
+            /** Creating a record in the history table*/
+            UpdateHistory::create
+            (
+                [
+                    'xmlId' => $xml->id,
+                    'update_id' => $updateId,
+                    'new_products_count' => $newProductsCount,
+                    'not_available_count' => $notAvailableCount,
+                    'update_time' => now(),
+                    'update_offers_count' => $updateProductsCount,
+                    'backup_file_path' => $backupFilePath,
+                    'offer_price_updates' => $priceUpdates
+                ]
+            );
+
+            return
+                [
+                    'status' => 'success'
+                ];
         }
+        else{
 
-        // БД
-        // Проверяем, существует ли запись для данного xmlId
-        $lastUpdate = UpdateHistory::where('xmlId', $xml->id)->latest()->first();
+            UpdateHistory::create
+            (
+                [
+                    'xmlId' => $xml->id,
+                    'update_id' => $updateId,
+                    'update_time' => now(),
+                    'error' => $errorText.' Line:'.$errorLine,
+                    'new_products_count' => $newProductsCount,
+                    'not_available_count' => $notAvailableCount,
+                    'update_offers_count' => $updateProductsCount,
+                ]
+            );
 
-        if ($lastUpdate) {
-            // Если запись существует, увеличиваем update_id на 1
-            $updateId = $lastUpdate->update_id + 1;
-        } else {
-
-            // Если записи не существует, устанавливаем update_id равным 1
-            $updateId = 1;
+            return
+                [
+                    'status' => 'fail',
+                    'error' => $errorText,
+                    'error_line' => $errorLine
+                ];
         }
-
-        // Creating a record in the table
-        UpdateHistory::create
-        (
-            [
-                'xmlId' => $xml->id,
-                'update_id' => $updateId,
-                'new_products_count' => $newProductsCount,
-                'not_available_count' => $notAvailableCount,
-                'update_time' => now(),
-                'update_offers_count' => $updateProductsCount,
-                'error' => $errorText
-            ]
-        );
-
-        return
-            [
-                'status' => ($hasError) ? 'false' : 'true',
-                'xmlId' => $xml->id,
-                'update_id' => $updateId,
-                'new_products_count' => $newProductsCount,
-                'not_available_count' => $notAvailableCount,
-                'update_time' => now(),
-                'update_offers_count' => $updateProductsCount,
-                'error' => $errorText,
-                'error_line' => $errorLine
-            ];
-
     }
 
     public function upload_from_mapper
@@ -495,31 +578,22 @@ class XmlFileController extends Controller
             }]);
 
         // Якщо обран режим оновлення то повертаэмо тільки записи з лінками. А файли не враховуємо.
-
-
-
         if ($request->has('sort_by') && !empty($request->get('sort_by')))
         {
             $sortColumn = $request->get('sort_by');
             $sortDirection = $request->get('order', 'asc');
             $query->orderBy($sortColumn, $sortDirection);
         }
-        else {
+        else
+        {
             $query->orderBy('id', 'desc');
         }
-
-//        if ($request->has('search'))
-//        {
-//            $search = $request->get('search');
-//            $query->where('custom_name', 'like', "%{$search}%");
-//            $query->orWhere('description', 'like', "%{$search}%");
-//            $query->orWhere('source_file_link', 'like', "%{$search}%");
-//        }
 
         if ($request->has('search'))
         {
             $search = $request->get('search');
-            $query->where(function ($query) use ($search) {
+            $query->where(function ($query) use ($search)
+            {
                 $query->where('custom_name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhere('source_file_link', 'like', "%{$search}%");
@@ -534,7 +608,19 @@ class XmlFileController extends Controller
         $perPage = $request->get('per_page', 25);
         $xmlFiles = $query->paginate($perPage);
 
-        $data['view_mode'] = $request->get('view_mode', 'view');
+        // Загальна кількість записів
+        $totalRecords = XmlFile::count();
+        // Загальна кількість завантажених файлів
+        $totalFiles = XmlFile::where('type', 'file')->count();
+        // Загальна кількість доданих лінків
+        $totalLinks = XmlFile::where('type', 'link')->count();
+
+        $data = [
+            'view_mode' => $request->get('view_mode', 'view'),
+            'total_records' => $totalRecords,
+            'total_files' => $totalFiles,
+            'total_links' => $totalLinks,
+        ];
 
         return inertia('list', compact('xmlFiles', 'data'));
     }
@@ -927,72 +1013,26 @@ class XmlFileController extends Controller
 
     public function fixer()
     {
-        $xmlData2 = file_get_contents('../FIXER/095.xml');
-        // Распарсить XML-данные
+        $xmlData2 = file_get_contents('../FIXER/145.xml');
+
         $xmlNew = new SimpleXMLElement($xmlData2);
 
         /** Перебор каждого товара в XML */
-        foreach ($xmlNew->shop->offer as $offer) {
-            $descriptionToRemove = '<strong>Доставка з магазину США.</strong><div>Вартість доставки від 278 грн в Україну залежно від розміру та ваги товару.</div><div>Термін доставки: 7-10 днів.</div>';
-
-
-            $existingDescription = $offer->description;
-            // Перевірити, чи існує CDATA-блок
-            if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>')) {
-                // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
-                $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
-                $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
-            }
-
-            $newText = str_replace($descriptionToRemove, '', $offer->description);
-
-            unset(
-                $offer->description
-            );
-
-            $newName = $offer->addChild('description');
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        foreach ($xmlNew->offers->offer as $offer)
+        {
+            $name_text = $offer->name;
+            $newName = $offer->addChild('name_ua');
             $newCData = dom_import_simplexml($newName);
             $newCData->appendChild
             (
                 $newCData->ownerDocument->createCDATASection
                 (
-                    trim($newText)
+                    trim($name_text)
                 )
             );
-
-
-
-            // ua
-
-
-            $newText = str_replace($descriptionToRemove, '', $offer->description_ua);
-
-            $existingDescription = $offer->description_ua;
-            // Перевірити, чи існує CDATA-блок
-            if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>')) {
-                // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
-                $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
-                $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
-            }
-
-            unset(
-                $offer->description_ua
-            );
-
-            $newName = $offer->addChild('description_ua');
-            $newCData = dom_import_simplexml($newName);
-            $newCData->appendChild
-            (
-                $newCData->ownerDocument->createCDATASection
-                (
-                    trim($newText)
-                )
-            );
-
-
-
         }
-        $xmlNew->asXML('../FIXER/95.xml');
+        $xmlNew->asXML('../FIXER/95_ua.xml');
         echo '1';
     }
 
@@ -1002,6 +1042,94 @@ class XmlFileController extends Controller
 
 // Формат А доступность товара по квантити
 // Формат D по доп полю от сергея
+
+
+
+
+
+
+
+//public function fixer()
+//{
+//    $xmlData2 = file_get_contents('../FIXER/095.xml');
+//    // Распарсить XML-данные
+//    $xmlNew = new SimpleXMLElement($xmlData2);
+//
+//    /** Перебор каждого товара в XML */
+//    foreach ($xmlNew->shop->offer as $offer) {
+//        $descriptionToRemove = '<strong>Доставка з магазину США.</strong><div>Вартість доставки від 278 грн в Україну залежно від розміру та ваги товару.</div><div>Термін доставки: 7-10 днів.</div>';
+//
+//
+//        $existingDescription = $offer->description;
+//        // Перевірити, чи існує CDATA-блок
+//        if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>')) {
+//            // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
+//            $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
+//            $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
+//        }
+//
+//        $newText = str_replace($descriptionToRemove, '', $offer->description);
+//
+//        unset(
+//            $offer->description
+//        );
+//
+//        $newName = $offer->addChild('description');
+//        $newCData = dom_import_simplexml($newName);
+//        $newCData->appendChild
+//        (
+//            $newCData->ownerDocument->createCDATASection
+//            (
+//                trim($newText)
+//            )
+//        );
+//
+//
+//
+//        // ua
+//
+//
+//        $newText = str_replace($descriptionToRemove, '', $offer->description_ua);
+//
+//        $existingDescription = $offer->description_ua;
+//        // Перевірити, чи існує CDATA-блок
+//        if (str_contains($existingDescription, '<![CDATA[') && str_contains($existingDescription, ']]>')) {
+//            // Видалити початковий та кінцевий теги CDATA (<!\[CDATA\[\s* та \s*\]\]>)
+//            $existingDescription = preg_replace('/^<!\[CDATA\[\s*/', '', $existingDescription);
+//            $existingDescription = preg_replace('/\s*\]\]>/', '', $existingDescription);
+//        }
+//
+//        unset(
+//            $offer->description_ua
+//        );
+//
+//        $newName = $offer->addChild('description_ua');
+//        $newCData = dom_import_simplexml($newName);
+//        $newCData->appendChild
+//        (
+//            $newCData->ownerDocument->createCDATASection
+//            (
+//                trim($newText)
+//            )
+//        );
+//
+//
+//
+//    }
+//    $xmlNew->asXML('../FIXER/95.xml');
+//    echo '1';
+//}
+
+
+
+
+
+
+
+
+
+
+
 
 
 //    public function fixer()

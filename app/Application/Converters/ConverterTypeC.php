@@ -7,7 +7,7 @@ use DOMException;
 use Exception;
 use SimpleXMLElement;
 
-class ConverterTypeC
+class ConverterTypeC implements ConverterInterface
 {
     public function __construct()
     {
@@ -21,7 +21,7 @@ class ConverterTypeC
     public function convert(
         $uploadFilePath,
         $params
-    ){
+    ): string{
 
         $opts = [
             'http' => [

@@ -106,88 +106,103 @@ const EditForm = ({ productId, onClose }) => {
     return (
         <div className="modal-background">
             <div className="modal">
-                <div className='translate-modal-title'>Переклад файлу ID: {productId}</div>
-                <br/>
-                <div>
-                </div>
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label>
-                            Api key DeepL
-                            <input
-                                type="text"
-                                name="apiKey"
-                                value={formData.apiKey}
-                                onChange={(e) => setFormData({...formData, apiKey: e.target.value})}
-                            />
-                        </label>
-                    </div>
+                <form onSubmit={handleSubmit} className="h-100">
+                    <div className="d-flex flex-column h-100">
+                        <h1>Переклад файлу ID: {productId}</h1>
+                        <br/>
+                        <div>
+                            <label>
+                                Api key DeepL
+                                <input
+                                    type="text"
+                                    name="apiKey"
+                                    value={formData.apiKey}
+                                    onChange={(e) => setFormData({...formData, apiKey: e.target.value})}
+                                />
+                            </label>
+                        </div>
 
-                    <button className="usageButton" type="button" onClick={handleGetDeepLUsage}>Отримати статистику
-                        DeepL API
-                    </button>
+                        <button type="button" onClick={handleGetDeepLUsage}>Отримати статистику
+                            DeepL API
+                        </button>
 
-                    <div>
-                        <label>
-                            Deepl usage:
-                        </label>
-                        {deepLUsage}
-                    </div>
+                        <div>
+                            <label>
+                                Deepl usage:
+                            </label>
 
-                    <br/>
+                            <div style={{color: 'blue', fontSize: '12px'}}>
+                                {deepLUsage}
+                            </div>
 
-                    <div>
+                        </div>
+
+                        <br/>
+
+                        <div>
                         {translateError}
-                    </div>
-
-
-                    <label>
-                        Налаштування перекладу:
-                    </label>
-
-                    <div>
-                        <div className='elements-block'>
-                            <label style={{fontWeight: 'normal'}}>
-                                <input
-                                    type="checkbox"
-                                    name="isTranslateName"
-                                    checked={formData.isTranslateName}
-                                    onChange={handleChange}
-                                />
-                                &nbsp;&nbsp; Перекласти назву товарів
-                            </label>
-
                         </div>
-                    </div>
 
-                    <div>
-                        <div className='elements-block'>
-                            <label style={{fontWeight: 'normal'}}>
-                                <input
-                                    type="checkbox"
-                                    name="isTranslateDescription"
-                                    checked={formData.isTranslateDescription}
-                                    onChange={handleChange}
-                                />
-                                &nbsp;&nbsp; Перекласти опис товарів
-                            </label>
+
+                        <label>
+                            Налаштування перекладу:
+                        </label>
+
+                        <div>
+                            <div className='elements-block'>
+                                <label style={{fontWeight: 'normal'}}>
+                                    <input
+                                        type="checkbox"
+                                        name="isTranslateName"
+                                        checked={formData.isTranslateName}
+                                        onChange={handleChange}
+                                    />
+                                    &nbsp;&nbsp; Перекласти назву товарів
+                                </label>
+
+                            </div>
                         </div>
+
+                        <div>
+                            <div className='elements-block'>
+                                <label style={{fontWeight: 'normal'}}>
+                                    <input
+                                        type="checkbox"
+                                        name="isTranslateDescription"
+                                        checked={formData.isTranslateDescription}
+                                        onChange={handleChange}
+                                    />
+                                    &nbsp;&nbsp; Перекласти опис товарів
+                                </label>
+                            </div>
+                        </div>
+
+                        <br/>
+
+                        <label>
+                            Статус перекладу файлу:
+                        </label>
+
+                        <div className='translatedCount'>
+                            Перекладено {translatedCount} з {totalCount} товарів
+                        </div>
+
+                        <progress value={translatedCount} max={totalCount}></progress>
+
+                        <div className="mt-auto">
+                            <div className="d-flex justify-content-between">
+                                <div className="modal-side-block w-50">
+                                    <button className="updateButton" type="submit">Почати переклад</button>
+                                </div>
+                                <div className="modal-side-block w-50 ml-5">
+                                    <button className="closeButton" onClick={onClose}>Закрити вікно</button>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <br/>
 
-                    <label>
-                        Статус перекладу файлу:
-                    </label>
-
-                    <div className='translatedCount'>
-                        Перекладено {translatedCount} з {totalCount} товарів
-                    </div>
-
-                    <progress value={translatedCount} max={totalCount}></progress>
-
-                    <button className="updateButton" type="submit">Почати переклад</button>
-                    <button className="closeButton" onClick={onClose}>Закрити вікно</button>
                 </form>
             </div>
         </div>

@@ -4,7 +4,7 @@ namespace App\Application\Converters;
 
 use DOMDocument;
 
-class ConverterTypeD
+class ConverterTypeD implements ConverterInterface
 {
     public function __construct()
     {
@@ -29,7 +29,7 @@ class ConverterTypeD
     (
         $uploadFilePath,
         $params
-    )
+    ):string
     {
         /** Read cvs file **/
         $file = fopen($uploadFilePath, 'r');
@@ -165,10 +165,10 @@ class ConverterTypeD
             $offer->appendChild($yml->createElement('country_of_origin', ''));
 
             /** URL товара */
-            if(isset($data[12]))
+            if(isset($data[14]))
             {
                 $nameElement = $offer->appendChild($yml->createElement('url'));
-                $nameElement->appendChild($yml->createCDATASection(trim($data[12])));
+                $nameElement->appendChild($yml->createCDATASection(trim($data[14])));
             }
 
             /** Описание товара */
@@ -232,7 +232,9 @@ class ConverterTypeD
 
             if(isset($data[8]))
             {
-                $paramElement = $yml->createElement('param', $data[8]);
+                $value = htmlspecialchars($data[8], ENT_QUOTES | ENT_XML1, 'UTF-8');
+
+                $paramElement = $yml->createElement('param', $value);
                 $paramElement->setAttribute('name', 'size');
                 $offer->appendChild($paramElement);
             }

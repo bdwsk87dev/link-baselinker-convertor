@@ -2,10 +2,8 @@
 
 namespace App\Providers;
 
-use App\Application\Converters\ConverterTypeA;
-use App\Application\Converters\ConverterTypeB;
 use Illuminate\Support\ServiceProvider;
-use League\CommonMark\ConverterInterface;
+use App\Factories\ConverterFactory;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,9 +12,12 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
-        //
+        $this->app->singleton(ConverterFactory::class, function ($app)
+        {
+            return new ConverterFactory();
+        });
     }
 
     /**

@@ -16,6 +16,8 @@ class UpdateHistory extends Model
         'not_available_count',
         'update_time',
         'update_offers_count',
-        'error'
+        'error',
+        'backup_file_path',
+        'offer_price_updates'
     ];
 }

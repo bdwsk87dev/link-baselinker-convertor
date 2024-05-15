@@ -114,22 +114,13 @@ const EditForm = ({xml_id, onClose}) => {
     return (
         <div className="modal-background">
             <div className="modal">
-
                 <form onSubmit={handleSubmit} className="h-100">
-
-
                     <div className="d-flex flex-column h-100">
-
                         <h1>Налаштування файлу ID: {xml_id}</h1>
                         <br/>
-
-
                         <div>
-
                             <div className="modal-block">
-
                                 <div className="modal-side-block w-50">
-
                                     <label>
                                         Збільшити ціну на %
                                     </label>
